@@ -1,0 +1,42 @@
+# --- Secrets ---
+.env
+.env.*
+!.env.example
+*.pem
+*service-account*.json
+credentials.json
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.ipynb_checkpoints/
+
+# --- Node ---
+node_modules/
+dist/
+.vite/
+*.log
+npm-debug.log*
+
+# --- Data and models (raw data never committed) ---
+data/*
+!data/.gitkeep
+*.tif
+*.tiff
+*.h5
+*.nc
+*.zip
+backend/models/*.joblib
+backend/models/*.json
+
+# --- OS / editors ---
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

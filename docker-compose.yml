@@ -1,0 +1,49 @@
+# Local development stack. Everything here is free and open source.
+#   docker compose up --build
+# db: http://localhost:5432   api: http://localhost:8000/docs   web: http://localhost:5173
+services:
+  db:
+    build: ./database
+    environment:
+      POSTGRES_USER: kshetra
+      POSTGRES_PASSWORD: kshetra
+      POSTGRES_DB: kshetra
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U kshetra -d kshetra"]
+      interval: 5s
+      retries: 10
+
+  api:
+    build: ./backend
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql://kshetra:kshetra@db:5432/kshetra
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app
+      - ./data:/data
+    depends_on:
+      db:
+        condition: service_healthy
+
+  web:
+    image: node:22-alpine
+    working_dir: /web
+    command: sh -c "npm install && npm run dev -- --host 0.0.0.0"
+    environment:
+      VITE_API_URL: http://localhost:8000
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/web
+      - /web/node_modules
+    depends_on:
+      - api
+
+volumes:
+  pgdata:
