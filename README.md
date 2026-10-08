@@ -14,7 +14,7 @@ it uses is free and open source. See [docs/PRD.md](docs/PRD.md) and
 | 1. Repo scaffold | ✅ |
 | 2. Database schema (4 memory layers) | ✅ |
 | 3. Earth Engine + NISAR + weather + soil pipeline | ✅ |
-| 4. ML models | ⏳ |
+| 4. ML models | ✅ |
 | 5. Backend APIs | ⏳ |
 | 6. LLM tool calling | ⏳ |
 | 7. Frontend pages | 🟡 map + navigation only |
@@ -94,6 +94,37 @@ boundaries: redraw them on the map before trusting field-level numbers.
 
 **Earth Engine cost:** one request per field per year per sensor, returning only field averages:
 roughly 10 years × 2 sensors = 20 small requests per field, a tiny fraction of the 150 EECU-hour monthly quota.
+
+## Field analysis (ML models)
+
+After ingestion, `seed_demo` also runs `analyze_field`, which writes Layer 3:
+
+| Model | Method | Output |
+|---|---|---|
+| Season detection (F2) | Humps in smoothed NDVI; sowing from radar puddling signal (paddy) or green-up − 15 days | `seasons`: sowing, peak, harvest dates; `in_progress` |
+| Crop detection (F3) | Phenology rules × district crop-area prior (+ trained model once farmers confirm 20+ seasons) | crop, confidence, alternatives; < 0.60 = "uncertain" |
+| Stress detection (F4) | Dry spells (only where rain is normally expected), heavy rain + radar standing water, sudden NDVI drops, heat at flowering | `events` with evidence numbers |
+| Yield (F5) | XGBoost quantile models (P10/P50/P90) when trained; otherwise district yield history × greenness vs the field's usual | range in t/ha, never one number |
+| Likely reasons (F6) | SHAP on the P50 model; baseline: greenness + stress events | `seasons.shap_reasons`, worded "likely" |
+| Field twins (F7) | k-NN with pgvector on scaled soil, timing, greenness and weather | 5 nearest field-seasons + what they did differently |
+
+Training data and models:
+```bash
+cd backend
+# 1. District crop statistics (free downloads, see scripts/load_reference.py)
+python -m scripts.load_reference apy ../data/district_apy.csv      # Ministry APY / data.gov.in (2017+)
+python -m scripts.load_reference icrisat ../data/icrisat_dld.csv   # ICRISAT DLD (history to ~2017)
+# 2. Train (needs 30+ confident field-seasons with district yields), then refresh all fields
+python -m scripts.train_models
+python -m scripts.analyze_all
+```
+Or use `notebooks/01_field_history_and_models.ipynb` on free Colab/Kaggle. Trained models are saved
+in `backend/models/` (gitignored).
+
+**Honest limits.** No free field-level yield data exists for India, so yields are trained on district
+averages and shown as ranges. Black gram and green gram look identical from space and are reported as
+"pulses". Crop rules use approximate published crop calendars for coastal Andhra Pradesh; other
+regions need their own ranges in `ml/crop_classifier.py`.
 
 ## Getting the free keys
 None of these need a credit card.

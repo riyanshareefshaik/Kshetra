@@ -43,6 +43,22 @@
 - Daily `ndvi_smoothed`: Savitzky-Golay (31 days) over observed + filled NDVI,
   left empty across gaps longer than 60 days.
 
+## Field analysis (backend/app/ml)
+`analyze_field` reads `field_timeseries` and writes `seasons` + `events`:
+1. `season_detection`: peaks in smoothed NDVI (padded so a crop still in the field counts);
+   green-up at 20% of the rise, harvest at 70% of the fall; sowing from a radar flooding dip
+   (VH or NISAR HV ≥ 3 dB below context and < −20 dB) within 45 days before green-up, else
+   green-up − 15 days. Season named by sowing month (kharif Jun–Sep, rabi Oct–Jan, zaid Feb–May).
+2. `features`: 21 season features (timing, greenness, radar at peak, rain by growth stage, dry
+   spells, heat at flowering, ET0, soil).
+3. `crop_classifier`: rule likelihoods × district crop-area prior, optionally blended with a
+   model trained on farmer-confirmed seasons. Farmer-confirmed crops are never overwritten.
+4. `stress_detection`: events with evidence; dry spells only where the field's own climatology
+   expects ≥ 40 mm in that window.
+5. `yield_model` + `explain_shap`: XGBoost P10/P50/P90 with leave-one-year-out metrics, or the
+   district baseline; reasons from SHAP (model) or greenness + events (baseline).
+6. `field_twins`: pgvector k-NN on fixed-scale vectors (no scaler to refit when fields are added).
+
 ## LLM (F10)
 The model sees only tool results. Tools: `get_field_summary`, `get_season`,
 `get_yield_explanation`, `find_field_twins`, `search_diary`, `run_what_if`.

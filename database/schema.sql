@@ -149,9 +149,14 @@ CREATE TABLE IF NOT EXISTS seasons (
     yield_high_t_ha      real CHECK (yield_high_t_ha >= 0),
     yield_is_forecast    boolean NOT NULL DEFAULT false,
     yield_model_version  text,
+    yield_method         text CHECK (yield_method IN ('model', 'baseline')),
     -- F6: [{"feature": "rain_jul_mm", "value": 412, "shap": -0.31, "reason": "Rainfall in July was low"}]
     shap_reasons         jsonb NOT NULL DEFAULT '[]',
-    -- F7 twins: standardized season features for k-NN (length fixed by ml/field_twins.py).
+    -- Season features used by the crop, yield and twin models (ml/features.py)
+    features             jsonb NOT NULL DEFAULT '{}',
+    in_progress          boolean NOT NULL DEFAULT false,
+    date_confidence      real CHECK (date_confidence BETWEEN 0 AND 1),
+    -- F7 twins: scaled season features for k-NN (ml/features.py twin_vector).
     feature_vector       vector,
     created_at           timestamptz NOT NULL DEFAULT now(),
     updated_at           timestamptz NOT NULL DEFAULT now(),
@@ -161,6 +166,12 @@ CREATE TABLE IF NOT EXISTS seasons (
     CHECK (yield_mid_t_ha IS NULL OR yield_high_t_ha IS NULL OR yield_mid_t_ha <= yield_high_t_ha),
     CHECK (sowing_date IS NULL OR harvest_date IS NULL OR sowing_date < harvest_date)
 );
+
+-- Columns added after the first release, for databases created earlier.
+ALTER TABLE seasons ADD COLUMN IF NOT EXISTS yield_method text CHECK (yield_method IN ('model', 'baseline'));
+ALTER TABLE seasons ADD COLUMN IF NOT EXISTS features jsonb NOT NULL DEFAULT '{}';
+ALTER TABLE seasons ADD COLUMN IF NOT EXISTS in_progress boolean NOT NULL DEFAULT false;
+ALTER TABLE seasons ADD COLUMN IF NOT EXISTS date_confidence real CHECK (date_confidence BETWEEN 0 AND 1);
 
 CREATE INDEX IF NOT EXISTS idx_seasons_field ON seasons (field_id, year DESC);
 CREATE INDEX IF NOT EXISTS idx_seasons_crop  ON seasons (crop, year);

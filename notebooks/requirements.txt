@@ -1,0 +1,3 @@
+# Extra packages for the notebooks only (all open source)
+matplotlib==3.10.3
+geemap==0.35.3

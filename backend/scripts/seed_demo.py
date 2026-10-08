@@ -1,4 +1,4 @@
-"""Load the demo fields and build their history from free satellite and weather data.
+"""Load the demo fields, build their history from free satellite and weather data, and analyse it.
 
     cd backend
     python -m scripts.seed_demo                 # all demo fields, 2017 -> yesterday
@@ -15,6 +15,7 @@ from datetime import date
 from pathlib import Path
 
 from app.db.session import get_conn
+from app.ml.analyze import analyze_field
 from app.services.ingest import ingest_field
 
 SEED_FILE = Path(__file__).resolve().parents[2] / "database" / "seeds" / "demo_fields.geojson"
@@ -61,6 +62,8 @@ def main():
             print(f"{fid}: {rep.rows} rows {rep.counts}")
             for err in rep.errors:
                 print(f"   ! {err}")
+            if rep.rows:
+                print(f"   seasons: {analyze_field(conn, fid)}")
 
 
 if __name__ == "__main__":

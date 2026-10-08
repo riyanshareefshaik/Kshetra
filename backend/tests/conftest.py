@@ -24,5 +24,5 @@ def conn(db_url):
     with psycopg.connect(db_url, row_factory=dict_row) as c:
         yield c
         c.rollback()
-        c.execute("TRUNCATE users, fields, api_cache CASCADE")
+        c.execute("TRUNCATE users, fields, api_cache, district_yields, mandi_prices, crop_varieties CASCADE")
         c.commit()
