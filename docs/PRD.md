@@ -46,8 +46,13 @@ satellite data, explains why yields went up or down, and guides the next season.
 
 NISAR cannot reach back to 2017, so history before 2025 uses Sentinel-1 for radar.
 
+## Added after the first release
+F15 offline app, F16 weather alerts, F17 irrigation advisor, F18 pest risk, F19 fertilizer
+calculator, F20 market advice, F21 PMFBY claim helper, F22 scheme finder, F23 farmer groups,
+F24 login, F25 full Telugu/Hindi screens with voice navigation (see README).
+
 ## Status
-All features F1-F14 are implemented (see README). Verified with 70 automated tests (on generated
+All features F1-F25 are implemented (see README). Verified with 87 automated tests (on generated
 test histories) and in the browser. Live satellite, NISAR, Bhashini and LLM calls need the
 team's free keys and have not been run from CI.
 

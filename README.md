@@ -22,7 +22,18 @@ free and open source. See [docs/PRD.md](docs/PRD.md) and [docs/architecture.md](
 | F11 | Voice farm diary → structured records; seed packet OCR | Diary |
 | F12 | One-click PDF for loans and PMFBY claims | Report |
 | F13 | Data sharing off by default; anonymised when on | Report |
-| F14 | Seed company dashboard, aggregates of 5+ fields only | Insights |
+| F14 | Seed company dashboard, aggregates of 5+ fields only | Insights (linked from Report) |
+| F15 | Works offline and installs like an app (PWA): saved pages, data and map tiles | everywhere |
+| F16 | 7-day weather alerts: heavy rain, heat, cold, wind, best spraying day, harvest window | Today |
+| F17 | Irrigation advisor: FAO-56 water balance with soil, crop stage, forecast and diary irrigations | Today |
+| F18 | Pest and disease risk from weather for paddy, cotton, chilli, maize, pulses, sugarcane | Today |
+| F19 | Fertilizer calculator: urea/DAP/MOP bags and cost from Soil Health Card ratings (card photo OCR) | Fertilizer |
+| F20 | When and where to sell: price trend, usual best month, nearby mandis by price and distance | Market |
+| F21 | PMFBY claim helper: flags damage, 72-hour deadline, helpline 14447, evidence PDF | Report & Claims |
+| F22 | Government scheme finder matched to the farmer (central + Andhra Pradesh) | Schemes |
+| F23 | Farmer group / FPO dashboard with join codes and opt-out sharing | Group |
+| F24 | Login with an email magic link (Supabase Auth); each farmer sees only their own fields | sign-in |
+| F25 | Every screen in Telugu, Hindi and English, with voice navigation (say "ఎరువులు", "मंडी", "today") | header 🎤 |
 
 ## Quick start
 
@@ -56,6 +67,20 @@ cd frontend && npm install && npm run dev    # http://localhost:5173
 
 System packages for PDF and OCR (already in the Docker images):
 `apt install libpango-1.0-0 libpangoft2-1.0-0 tesseract-ocr tesseract-ocr-tel tesseract-ocr-hin`.
+
+## Login (optional)
+
+Without login (`AUTH_MODE=none`, the default) Kshetra is single-user: good for one farmer, a
+kiosk or a demo. To give every farmer their own account:
+
+1. In Supabase: *Authentication → Sign In / Providers → Email* (on by default). Under
+   *Authentication → URL Configuration* set the Site URL to your app (e.g. `https://<app>.vercel.app`).
+2. API: `AUTH_MODE=supabase` and `SUPABASE_URL`. Projects with a legacy shared JWT secret also set
+   `SUPABASE_JWT_SECRET`; newer projects are verified with their public keys automatically.
+3. App: `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` (the anon key is public by design).
+
+Supabase Auth's free tier covers 50,000 monthly users, but its built-in email sender only allows a
+few emails per hour; for real use connect any free SMTP provider in *Authentication → Emails*.
 
 ## Real fields: building history
 
@@ -114,7 +139,7 @@ No key needed: Open-Meteo, NASA POWER, SoilGrids, Ollama (`ollama pull qwen2.5:7
    *Alternative:* Render free (`render.yaml`, 512 MB, set `WITH_AI=0`, sleeps after 15 min idle).
 3. **Web — Vercel (Hobby, non-commercial):** import the repo, root directory `frontend`, set
    `VITE_API_URL=https://<your-space>.hf.space`. `frontend/vercel.json` handles page routes.
-4. **CI — GitHub Actions** (`.github/workflows/ci.yml`): lint, 70 backend tests on PostGIS +
+4. **CI — GitHub Actions** (`.github/workflows/ci.yml`): lint, 87 backend tests on PostGIS +
    pgvector, frontend build. Free for public repos; private repos get 2,000 free minutes/month.
 
 Before a demo: open the Space (wakes it), restore Supabase if paused, and make sure your
@@ -131,13 +156,16 @@ fields were ingested while online.
 - **Vercel Hobby and Open-Meteo:** non-commercial use only.
 - **Bhashini:** needs approval; **gTTS** uses an unofficial endpoint (used only if the browser has
   no Telugu/Hindi voice).
+- **OpenStreetMap Nominatim** (mandi distances): 1 request per second; every lookup is cached forever.
+- **Open-Meteo forecast** (Today page): cached 3 hours per field; free for non-commercial use.
 
 ## Repository layout
 ```
-frontend/    React + Vite + Tailwind + Leaflet/Geoman + Recharts (9 pages)
-backend/app/ api/ (one router per feature) · services/ (Earth Engine, NISAR, weather, soil,
-             prices, LLM + tools, memory, voice, OCR, PDF, boundary, cache, ingest)
-             ml/ (gap fill, seasons, features, crop, stress, yield, SHAP, twins, simulator)
+frontend/    React + Vite + Tailwind + Leaflet/Geoman + Recharts (14 pages), PWA service worker
+backend/app/ api/ (one router per feature, auth) · services/ (Earth Engine, NISAR, weather, forecast,
+             soil, prices, market, claims, schemes, LLM + tools, memory, voice, OCR, PDF, boundary, cache, ingest)
+             ml/ (gap fill, seasons, features, crop, stress, yield, SHAP, twins, simulator,
+             advisory, irrigation, fertilizer)
 backend/scripts/  refresh_fields, load_reference, fetch_prices, train_models, analyze_all
 database/    schema.sql (4 memory layers), seeds/, Dockerfile (local PostGIS + pgvector)
 notebooks/   Colab/Kaggle notebook: plot a field, train the yield model
@@ -150,10 +178,13 @@ docs/        PRD.md, architecture.md
   the field's greenness.
 - **Crop rules** use approximate published crop calendars for coastal Andhra Pradesh; black gram and
   green gram look identical from space and are reported as "pulses". Farmer confirmations override.
+- **Pest risk** is from weather only, and **irrigation** uses standard FAO-56 crop and soil values:
+  both are guidance, not a diagnosis or a soil-moisture measurement.
+- **Fertilizer** doses are standard package-of-practices values adjusted by Soil Health Card ratings;
+  MOP price is approximate. **Schemes** change: every card links to the official site.
 - **What-if and planner** apply rule-based nitrogen and irrigation effects, and seed/other costs in
   `database/seeds/crop_varieties.csv` are rough estimates — edit them with real CACP figures.
   Assumptions are listed next to every result.
-- **No login yet:** fields belong to a demo farmer. Add auth before real farmers use it.
 - Not yet run against live Earth Engine / NISAR / Bhashini from this repo's CI (they need your keys);
   those clients are tested against recorded-format responses.
 

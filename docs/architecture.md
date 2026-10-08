@@ -93,6 +93,33 @@ and ranks by profit minus half the downside. Typical response time: 50-100 ms.
 - Seed packets: Tesseract eng+tel+hin, regexes for Seeds Act label fields.
 - PDF: Jinja2 + WeasyPrint, charts as inline SVG, SHA-256 digest of the report data.
 
+## Daily advice (Today page)
+`services/forecast.py` fetches Open-Meteo's forecast with 7 past days (daily + hourly humidity),
+cached 3 h. `ml/advisory.py` turns it into alerts (IMD rain categories, heat, cold, wind, spray and
+harvest windows) and weather-based pest risk rules per crop. `ml/irrigation.py` runs an FAO-56
+soil-water balance from sowing to 7 days ahead: ETc = Kc(stage)·ET0, effective rain, TAW from
+soil texture × root depth, RAW = p·TAW; diary irrigations reset it; paddy gets AWD advice.
+
+## Fertilizer, market, claims, schemes, groups
+- `ml/fertilizer.py`: recommended N-P2O5-K2O × Soil Health Card rating factor (low 1.25, medium 1,
+  high 0.75) → DAP, urea, MOP bags and cost; `services/ocr.parse_soil_card` reads card photos.
+- `services/market.py`: weekly median price, month-of-year averages, latest price per mandi, distance
+  via Nominatim (cached), net of a rough Rs 2/quintal/km transport cost.
+- `services/claims.py`: PMFBY localised and post-harvest candidates, 72 h window, evidence PDF.
+- `services/schemes.py` + `database/seeds/schemes.json`: curated schemes matched to the profile.
+- `api/groups.py`: `farmer_groups`, `group_members` (share_with_group), dashboard of sharing members.
+
+## Login and access
+`api/auth.py`: AUTH_MODE=none → one local user. AUTH_MODE=supabase → Bearer JWT verified with the
+project's JWKS (or legacy HS256 secret), mapped to `users.auth_id`; `field_or_404` /
+`season_or_404` enforce ownership on every field endpoint.
+
+## Frontend: language, voice, offline
+Every string lives in `src/i18n.js` as [en, te, hi]. Server advice arrives as codes plus numbers and is
+worded on the device (`components/words.js`). The header microphone listens once (Web Speech API)
+and matches page keywords in all three languages. `public/sw.js` caches the app shell, field data
+(network first) and viewed map tiles; signing out clears saved field data.
+
 ## Privacy (F13, F14)
 `users.data_sharing_consent` defaults to `false`. The seed company view
 (`v_seed_insights`) uses consenting fields only, drops owner and geometry,
