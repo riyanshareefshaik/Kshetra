@@ -15,6 +15,9 @@ class Settings(BaseSettings):
     groq_api_key: str = ""
     supabase_url: str = ""
     supabase_key: str = ""
+    # "none": single-user local mode (no login). "supabase": email magic-link login via Supabase Auth.
+    auth_mode: str = "none"
+    supabase_jwt_secret: str = ""      # legacy HS256 projects; newer projects use JWKS automatically
     data_gov_api_key: str = ""
     bhashini_key: str = ""
     bhashini_user_id: str = ""

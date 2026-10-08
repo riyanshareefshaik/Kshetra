@@ -2,6 +2,7 @@
 from fastapi import APIRouter, Depends
 from fastapi.responses import Response
 
+from app.api.auth import current_user
 from app.api.deps import db, field_or_404
 from app.services.report_pdf import render_pdf
 
@@ -9,8 +10,8 @@ router = APIRouter(prefix="/api", tags=["report"])
 
 
 @router.get("/fields/{field_id}/report.pdf")
-def report(field_id: str, conn=Depends(db)):
-    f = field_or_404(conn, field_id)
+def report(field_id: str, conn=Depends(db), user=Depends(current_user)):
+    f = field_or_404(conn, field_id, user)
     pdf, digest = render_pdf(conn, field_id)
     name = "".join(c if c.isalnum() else "-" for c in (f["name"] or "field")).strip("-").lower() or "field"
     return Response(pdf, media_type="application/pdf", headers={

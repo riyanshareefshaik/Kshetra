@@ -6,6 +6,7 @@ from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
 from psycopg.types.json import Jsonb
 
 from app.api.ask import _audio_format
+from app.api.auth import current_user
 from app.api.deps import db, field_or_404
 from app.services import diary_parser, memory, ocr, voice
 
@@ -27,8 +28,8 @@ def _season_for(conn, field_id: str, day: date) -> str | None:
 @router.post("/fields/{field_id}/diary", status_code=201)
 async def add_entry(field_id: str, text: str | None = Form(None), language: Lang = Form("te"),
                     entry_date: date | None = Form(None), audio: UploadFile | None = File(None),
-                    conn=Depends(db)):
-    f = field_or_404(conn, field_id)
+                    conn=Depends(db), user=Depends(current_user)):
+    f = field_or_404(conn, field_id, user)
     heard = None
     if audio is not None:
         data = await audio.read()
@@ -67,8 +68,8 @@ async def add_entry(field_id: str, text: str | None = Form(None), language: Lang
 
 
 @router.get("/fields/{field_id}/diary")
-def list_entries(field_id: str, conn=Depends(db)):
-    field_or_404(conn, field_id)
+def list_entries(field_id: str, conn=Depends(db), user=Depends(current_user)):
+    field_or_404(conn, field_id, user)
     return conn.execute(
         """SELECT id::text, season_id::text, entry_date, raw_text, text_en, language, activity_type, structured,
                   seed_packet, created_at
@@ -79,7 +80,7 @@ def list_entries(field_id: str, conn=Depends(db)):
 
 @router.post("/seed-packet")
 async def read_seed_packet(image: UploadFile = File(...), field_id: str | None = Form(None),
-                           language: Lang = Form("en"), conn=Depends(db)):
+                           language: Lang = Form("en"), conn=Depends(db), user=Depends(current_user)):
     data = await image.read()
     if len(data) > MAX_UPLOAD:
         raise HTTPException(413, "image too large")
@@ -90,7 +91,7 @@ async def read_seed_packet(image: UploadFile = File(...), field_id: str | None =
     packet = ocr.parse_seed_packet(text)
     result = {"seed_packet": packet, "text": text}
     if field_id:
-        field_or_404(conn, field_id)
+        field_or_404(conn, field_id, user)
         day = date.today()  # noqa: DTZ011
         summary = "Seed packet: " + ", ".join(f"{k} {v}" for k, v in packet.items()) if packet else "Seed packet photo"
         row = conn.execute(

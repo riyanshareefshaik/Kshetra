@@ -4,15 +4,15 @@ from typing import Literal
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 
-from app.api.deps import db, demo_user_id
+from app.api.auth import current_user
+from app.api.deps import db
 
 router = APIRouter(prefix="/api", tags=["users"])
 
 
 class UserIn(BaseModel):
     name: str | None = None
-    phone: str | None = None
-    preferred_language: Literal["te", "hi", "en"] = "te"
+    preferred_language: Literal["te", "hi", "en"] | None = None
 
 
 class Consent(BaseModel):
@@ -29,33 +29,28 @@ def _user(conn, user_id: str) -> dict:
     return row
 
 
-@router.get("/users/demo")
-def demo_user(conn=Depends(db)):
-    uid = demo_user_id(conn)
-    conn.commit()
-    return _user(conn, uid)
+@router.get("/users/me")
+def me(conn=Depends(db), user=Depends(current_user)):
+    out = _user(conn, user["id"])
+    return {**out, "email": user["email"], "auth_mode": user["mode"]}
 
 
-@router.post("/users", status_code=201)
-def create_user(body: UserIn, conn=Depends(db)):
-    uid = conn.execute("INSERT INTO users (name, phone, preferred_language) VALUES (%s, %s, %s) RETURNING id::text",
-                       (body.name, body.phone, body.preferred_language)).fetchone()["id"]
-    conn.commit()
-    return _user(conn, uid)
+@router.patch("/users/me")
+def update_me(body: UserIn, conn=Depends(db), user=Depends(current_user)):
+    data = body.model_dump(exclude_unset=True)
+    if data:
+        sets = ", ".join(f"{k} = %({k})s" for k in data)
+        conn.execute(f"UPDATE users SET {sets} WHERE id::text = %(id)s", {**data, "id": user["id"]})
+        conn.commit()
+    return me(conn, user)
 
 
-@router.get("/users/{user_id}")
-def get_user(user_id: str, conn=Depends(db)):
-    return _user(conn, user_id)
-
-
-@router.put("/users/{user_id}/consent")
-def set_consent(user_id: str, body: Consent, conn=Depends(db)):
-    _user(conn, user_id)
+@router.put("/users/me/consent")
+def set_consent(body: Consent, conn=Depends(db), user=Depends(current_user)):
     conn.execute("UPDATE users SET data_sharing_consent = %s, consent_updated_at = now() WHERE id::text = %s",
-                 (body.data_sharing_consent, user_id))
+                 (body.data_sharing_consent, user["id"]))
     conn.commit()
-    return _user(conn, user_id)
+    return _user(conn, user["id"])
 
 
 @router.get("/insights")

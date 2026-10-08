@@ -4,6 +4,7 @@ from typing import Literal
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
 from pydantic import BaseModel, Field
 
+from app.api.auth import current_user
 from app.api.deps import db, field_or_404
 from app.services import llm, voice
 
@@ -17,14 +18,14 @@ class Question(BaseModel):
 
 
 @router.post("/fields/{field_id}/ask")
-def ask(field_id: str, body: Question, conn=Depends(db)):
-    f = field_or_404(conn, field_id)
+def ask(field_id: str, body: Question, conn=Depends(db), user=Depends(current_user)):
+    f = field_or_404(conn, field_id, user)
     return llm.ask(conn, field_id, body.question, body.language, user_id=f["owner_id"])
 
 
 @router.post("/fields/{field_id}/ask/voice")
-async def ask_voice(field_id: str, audio: UploadFile = File(...), language: Lang = Form("te"), conn=Depends(db)):
-    f = field_or_404(conn, field_id)
+async def ask_voice(field_id: str, audio: UploadFile = File(...), language: Lang = Form("te"), conn=Depends(db), user=Depends(current_user)):
+    f = field_or_404(conn, field_id, user)
     data = await audio.read()
     try:
         heard = voice.transcribe(data, language, audio_format=_audio_format(audio.filename))
@@ -36,8 +37,8 @@ async def ask_voice(field_id: str, audio: UploadFile = File(...), language: Lang
 
 
 @router.get("/fields/{field_id}/ask/history")
-def history(field_id: str, limit: int = 20, conn=Depends(db)):
-    field_or_404(conn, field_id)
+def history(field_id: str, limit: int = 20, conn=Depends(db), user=Depends(current_user)):
+    field_or_404(conn, field_id, user)
     return conn.execute(
         """SELECT id::text, language, question, answer, answered, sources, llm_provider, created_at
            FROM qa_log WHERE field_id = %s ORDER BY created_at DESC LIMIT %s""",

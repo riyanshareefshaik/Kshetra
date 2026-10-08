@@ -8,7 +8,8 @@ from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query
 from pydantic import BaseModel, Field
 from shapely.geometry import shape
 
-from app.api.deps import db, demo_user_id, field_or_404
+from app.api.auth import current_user
+from app.api.deps import db, field_or_404
 from app.db.session import get_conn
 from app.ml.analyze import analyze_field
 from app.services.boundary import auto_boundary, pin_square
@@ -31,7 +32,6 @@ class FieldIn(BaseModel):
     district: str | None = None
     state: str | None = None
     irrigation_type: Irrigation | None = None
-    owner_id: str | None = None
     start_ingest: bool = True
 
 
@@ -77,21 +77,21 @@ def run_refresh(field_id: str, start: date | None = None):
 
 
 @router.post("/fields/auto-boundary")
-def propose_boundary(pin: Pin, conn=Depends(db)):
+def propose_boundary(pin: Pin, conn=Depends(db), user=Depends(current_user)):
     """Suggest a boundary for a pin (cached; falls back to a square around the pin)."""
     return cached(conn, "gee_boundary", {"lat": round(pin.lat, 5), "lon": round(pin.lon, 5)},
                   lambda: auto_boundary(pin.lat, pin.lon))
 
 
 @router.post("/fields", status_code=201)
-def create_field(body: FieldIn, tasks: BackgroundTasks, conn=Depends(db)):
+def create_field(body: FieldIn, tasks: BackgroundTasks, conn=Depends(db), user=Depends(current_user)):
     if body.boundary:
         geom, source = _valid_polygon(body.boundary), body.boundary_source or "drawn"
     elif body.lat is not None and body.lon is not None:
         geom, source = pin_square(body.lat, body.lon), "pin_buffer"
     else:
         raise HTTPException(422, "send a boundary polygon or a lat/lon pin")
-    owner = body.owner_id or demo_user_id(conn)
+    owner = user["id"]
     fid = conn.execute(
         """INSERT INTO fields (owner_id, name, boundary, boundary_source, village, district, state, irrigation_type)
            VALUES (%s, %s, ST_SetSRID(ST_GeomFromGeoJSON(%s), 4326), %s, %s, %s, %s, %s) RETURNING id::text""",
@@ -100,11 +100,13 @@ def create_field(body: FieldIn, tasks: BackgroundTasks, conn=Depends(db)):
     conn.commit()
     if body.start_ingest:
         tasks.add_task(run_refresh, fid)
-    return field_or_404(conn, fid)
+    return field_or_404(conn, fid, user)
 
 
 @router.get("/fields")
-def list_fields(owner_id: str | None = None, conn=Depends(db)):
+def list_fields(conn=Depends(db), user=Depends(current_user)):
+    # Local mode shows every field on this installation; with login, only your own.
+    owner_id = user["id"] if user["mode"] == "supabase" else None
     rows = conn.execute(
         """SELECT f.id::text, f.name, f.district, f.state, f.area_ha, f.ingest_status,
                   ST_Y(f.location) AS lat, ST_X(f.location) AS lon, ST_AsGeoJSON(f.boundary)::json AS boundary,
@@ -118,13 +120,13 @@ def list_fields(owner_id: str | None = None, conn=Depends(db)):
 
 
 @router.get("/fields/{field_id}")
-def get_field(field_id: str, conn=Depends(db)):
-    return field_or_404(conn, field_id)
+def get_field(field_id: str, conn=Depends(db), user=Depends(current_user)):
+    return field_or_404(conn, field_id, user)
 
 
 @router.patch("/fields/{field_id}")
-def update_field(field_id: str, body: FieldPatch, tasks: BackgroundTasks, conn=Depends(db)):
-    field_or_404(conn, field_id)
+def update_field(field_id: str, body: FieldPatch, tasks: BackgroundTasks, conn=Depends(db), user=Depends(current_user)):
+    field_or_404(conn, field_id, user)
     data = body.model_dump(exclude_unset=True)
     boundary = data.pop("boundary", None)
     if data:
@@ -135,19 +137,19 @@ def update_field(field_id: str, body: FieldPatch, tasks: BackgroundTasks, conn=D
                      " WHERE id = %s", (json.dumps(_valid_polygon(boundary)), field_id))
         tasks.add_task(run_refresh, field_id)      # new boundary -> new satellite averages
     conn.commit()
-    return field_or_404(conn, field_id)
+    return field_or_404(conn, field_id, user)
 
 
 @router.delete("/fields/{field_id}", status_code=204)
-def delete_field(field_id: str, conn=Depends(db)):
-    field_or_404(conn, field_id)
+def delete_field(field_id: str, conn=Depends(db), user=Depends(current_user)):
+    field_or_404(conn, field_id, user)
     conn.execute("DELETE FROM fields WHERE id = %s", (field_id,))
     conn.commit()
 
 
 @router.post("/fields/{field_id}/refresh", status_code=202)
-def refresh_field(field_id: str, tasks: BackgroundTasks, start: date | None = None, conn=Depends(db)):
-    field_or_404(conn, field_id)
+def refresh_field(field_id: str, tasks: BackgroundTasks, start: date | None = None, conn=Depends(db), user=Depends(current_user)):
+    field_or_404(conn, field_id, user)
     conn.execute("UPDATE fields SET ingest_status = 'pending' WHERE id = %s", (field_id,))
     conn.commit()
     tasks.add_task(run_refresh, field_id, start)
@@ -157,8 +159,8 @@ def refresh_field(field_id: str, tasks: BackgroundTasks, start: date | None = No
 @router.get("/fields/{field_id}/timeseries")
 def timeseries(field_id: str, start: date | None = None, end: date | None = None,
                step: int = Query(5, ge=1, le=31, description="return every Nth day, plus every satellite date"),
-               conn=Depends(db)):
-    field_or_404(conn, field_id)
+               conn=Depends(db), user=Depends(current_user)):
+    field_or_404(conn, field_id, user)
     rows = conn.execute(
         """WITH t AS (
              SELECT date, ndvi, ndvi_smoothed, ndvi_source, cloud_pct, sar_vv, sar_vh, nisar_l_hh, nisar_l_hv,

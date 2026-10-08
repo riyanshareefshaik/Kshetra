@@ -6,6 +6,7 @@ from typing import Literal
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 
+from app.api.auth import current_user
 from app.api.deps import db, field_or_404
 from app.ml.simulator import FieldContext, Scenario, next_season, plan, simulate
 
@@ -34,9 +35,9 @@ def crop_varieties(season: Season | None = None, conn=Depends(db)):
 
 
 @router.post("/fields/{field_id}/what-if")
-def what_if(field_id: str, body: WhatIf, conn=Depends(db)):
+def what_if(field_id: str, body: WhatIf, conn=Depends(db), user=Depends(current_user)):
     t0 = time.perf_counter()
-    field_or_404(conn, field_id)
+    field_or_404(conn, field_id, user)
     v = conn.execute(
         """SELECT * FROM crop_varieties WHERE crop = %s AND season = %s AND (%s::text IS NULL OR variety = %s)
            ORDER BY variety LIMIT 1""",
@@ -68,8 +69,8 @@ def what_if(field_id: str, body: WhatIf, conn=Depends(db)):
 
 
 @router.get("/fields/{field_id}/plan")
-def next_season_plan(field_id: str, season: Season | None = None, conn=Depends(db)):
-    field_or_404(conn, field_id)
+def next_season_plan(field_id: str, season: Season | None = None, conn=Depends(db), user=Depends(current_user)):
+    field_or_404(conn, field_id, user)
     target, year = (season, None) if season else next_season(date.today())  # noqa: DTZ011
     options = plan(FieldContext(conn, field_id), target)
     return {"season": target, "year": year, "options": options,

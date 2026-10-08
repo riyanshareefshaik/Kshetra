@@ -4,37 +4,9 @@ import json
 import time
 
 import psycopg
-import pytest
-from fastapi.testclient import TestClient
 from psycopg.rows import dict_row
 
 from app.services import memory
-
-
-@pytest.fixture(scope="module")
-def client(db_url, monkeypatch_module):
-    monkeypatch_module.setenv("DATABASE_URL", db_url)
-    monkeypatch_module.setenv("LLM_PROVIDER_ORDER", "fake")
-    monkeypatch_module.setenv("GEE_PROJECT", "")
-    from app.config import get_settings
-    get_settings.cache_clear()
-    from tests.fixtures import seed
-    with psycopg.connect(db_url, row_factory=dict_row) as conn:
-        ids = seed(conn, 6)
-    from app.main import app
-    with TestClient(app) as c:
-        c.ids = ids
-        yield c
-    with psycopg.connect(db_url) as conn:
-        conn.execute("TRUNCATE users, fields, api_cache, district_yields, crop_varieties CASCADE")
-    get_settings.cache_clear()
-
-
-@pytest.fixture(scope="module")
-def monkeypatch_module():
-    mp = pytest.MonkeyPatch()
-    yield mp
-    mp.undo()
 
 
 def kharif_season(client, fid, year=2023):
@@ -237,16 +209,16 @@ def test_report_pdf(client):
 
 
 def test_consent_and_insights(client):
-    demo = client.get("/api/users/demo").json()
-    assert demo["data_sharing_consent"] is False                     # off by default
-    on = client.put(f"/api/users/{demo['id']}/consent", json={"data_sharing_consent": True}).json()
+    demo = client.get("/api/users/me").json()
+    assert demo["data_sharing_consent"] is False and demo["auth_mode"] == "local"   # off by default
+    on = client.put("/api/users/me/consent", json={"data_sharing_consent": True}).json()
     assert on["data_sharing_consent"] is True and on["consent_updated_at"]
     ins = client.get("/api/insights", params={"crop": "paddy"}).json()
     assert ins["min_group_size"] == 5 and ins["groups"]
     g = ins["groups"][0]
     assert g["n_fields"] >= 5 and set(g) >= {"district", "crop", "avg_yield_mid_t_ha"}
     assert not ({"field_id", "owner_id", "lat", "lon", "boundary"} & set(g))
-    client.put(f"/api/users/{demo['id']}/consent", json={"data_sharing_consent": False})
+    client.put("/api/users/me/consent", json={"data_sharing_consent": False})
 
 
 def test_crop_varieties_loaded(client):

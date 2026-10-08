@@ -3,6 +3,7 @@ from fastapi import APIRouter, Depends
 from psycopg.types.json import Jsonb
 from pydantic import BaseModel
 
+from app.api.auth import current_user
 from app.api.deps import db, field_or_404, season_or_404
 from app.ml.crop_classifier import CROPS
 from app.ml.field_twins import find_twins
@@ -16,8 +17,8 @@ class SeasonPatch(BaseModel):
 
 
 @router.get("/fields/{field_id}/seasons")
-def list_seasons(field_id: str, conn=Depends(db)):
-    field_or_404(conn, field_id)
+def list_seasons(field_id: str, conn=Depends(db), user=Depends(current_user)):
+    field_or_404(conn, field_id, user)
     return conn.execute(
         """SELECT id::text, year, season, crop, crop_confidence, crop_status, crop_alternatives,
                   crop_confirmed_by_farmer, variety, sowing_date, peak_date, harvest_date, peak_ndvi,
@@ -30,8 +31,8 @@ def list_seasons(field_id: str, conn=Depends(db)):
 
 
 @router.get("/fields/{field_id}/events")
-def list_events(field_id: str, conn=Depends(db)):
-    field_or_404(conn, field_id)
+def list_events(field_id: str, conn=Depends(db), user=Depends(current_user)):
+    field_or_404(conn, field_id, user)
     return conn.execute(
         """SELECT id::text, season_id::text, event_type, start_date, end_date, severity, origin, evidence
            FROM events WHERE field_id = %s ORDER BY start_date""",
@@ -40,14 +41,14 @@ def list_events(field_id: str, conn=Depends(db)):
 
 
 @router.get("/seasons/{season_id}")
-def get_season(season_id: str, conn=Depends(db)):
-    return season_or_404(conn, season_id)
+def get_season(season_id: str, conn=Depends(db), user=Depends(current_user)):
+    return season_or_404(conn, season_id, user)
 
 
 @router.patch("/seasons/{season_id}")
-def confirm_season(season_id: str, body: SeasonPatch, conn=Depends(db)):
+def confirm_season(season_id: str, body: SeasonPatch, conn=Depends(db), user=Depends(current_user)):
     """The farmer confirms or corrects the crop/variety. Confirmed crops are never overwritten."""
-    season_or_404(conn, season_id)
+    season_or_404(conn, season_id, user)
     if body.crop is not None:
         if body.crop not in CROPS:
             from fastapi import HTTPException
@@ -58,12 +59,12 @@ def confirm_season(season_id: str, body: SeasonPatch, conn=Depends(db)):
     if body.variety is not None:
         conn.execute("UPDATE seasons SET variety = %s, updated_at = now() WHERE id = %s", (body.variety, season_id))
     conn.commit()
-    return season_or_404(conn, season_id)
+    return season_or_404(conn, season_id, user)
 
 
 @router.get("/seasons/{season_id}/why")
-def why(season_id: str, conn=Depends(db)):
-    s = season_or_404(conn, season_id)
+def why(season_id: str, conn=Depends(db), user=Depends(current_user)):
+    s = season_or_404(conn, season_id, user)
     events = conn.execute(
         "SELECT event_type, start_date, end_date, severity, evidence FROM events WHERE season_id = %s ORDER BY start_date",
         (season_id,),
@@ -79,8 +80,8 @@ def why(season_id: str, conn=Depends(db)):
 
 
 @router.get("/seasons/{season_id}/twins")
-def twins(season_id: str, conn=Depends(db)):
-    season_or_404(conn, season_id)
+def twins(season_id: str, conn=Depends(db), user=Depends(current_user)):
+    season_or_404(conn, season_id, user)
     out = find_twins(conn, season_id)
     for t in out["twins"]:
         t.pop("field_id", None)      # other farmers stay anonymous
