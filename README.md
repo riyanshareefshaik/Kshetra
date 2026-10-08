@@ -2,152 +2,166 @@
 
 **An AI that learns from every field's past to guide its future.** Team GenZ, AgriTech hackathon.
 
-Kshetra rebuilds a farm field's seasonal history (2017 onward) from free
-satellite data (Sentinel-2 optical, Sentinel-1 radar and NISAR radar),
-explains why yields went up or down, and guides the next season. Everything
-it uses is free and open source. See [docs/PRD.md](docs/PRD.md) and
-[docs/architecture.md](docs/architecture.md).
+Kshetra rebuilds a farm field's seasonal history (2017 onward) from free satellite data
+(Sentinel-2 optical, Sentinel-1 radar and NASA-ISRO **NISAR** radar), explains why yields went
+up or down, and guides the next season — in Telugu, Hindi and English. Everything it uses is
+free and open source. See [docs/PRD.md](docs/PRD.md) and [docs/architecture.md](docs/architecture.md).
 
-## Build status
-| Stage | Status |
-|---|---|
-| 1. Repo scaffold | ✅ |
-| 2. Database schema (4 memory layers) | ✅ |
-| 3. Earth Engine + NISAR + weather + soil pipeline | ✅ |
-| 4. ML models | ✅ |
-| 5. Backend APIs | ⏳ |
-| 6. LLM tool calling | ⏳ |
-| 7. Frontend pages | 🟡 map + navigation only |
-| 8. Voice and OCR | ⏳ |
-| 9. PDF report | ⏳ |
+| | Feature | Where |
+|---|---|---|
+| F1 | Draw a field, or drop a pin and get a boundary from Sentinel-2 segmentation | Map |
+| F2 | Season timeline: sowing / peak / harvest from NDVI, radar fills monsoon cloud gaps | Timeline |
+| F3 | Crop per season with confidence; < 60% shown as "uncertain"; farmer can confirm | Timeline |
+| F4 | Stress: dry spells, waterlogging/flood, sudden damage, heat at flowering | Timeline |
+| F5 | Yield as a range (t/ha), forecasts for crops still in the field | Timeline, Why |
+| F6 | "Likely reasons" from SHAP (never "causes") | Why & Twins |
+| F7 | 5 most similar fields and what they did differently | Why & Twins |
+| F8 | What-if sliders → yield, risk, profit in well under a second | What-If |
+| F9 | Top 3 crop + variety options for next season | Planner |
+| F10 | Voice/text Q&A, answers only from tool calls on your data, with sources, or "I don't know" | Ask Your Field |
+| F11 | Voice farm diary → structured records; seed packet OCR | Diary |
+| F12 | One-click PDF for loans and PMFBY claims | Report |
+| F13 | Data sharing off by default; anonymised when on | Report |
+| F14 | Seed company dashboard, aggregates of 5+ fields only | Insights |
 
-## Repository layout
-```
-frontend/    React + Vite + Tailwind + Leaflet/Geoman + Recharts
-backend/app/ FastAPI: api/ (routers), services/ (data sources, LLM, voice, PDF), ml/, db/
-database/    schema.sql (all 4 memory layers) + local Postgres Dockerfile
-notebooks/   data exploration and model training (Colab / Kaggle)
-data/        raw data (gitignored)
-docs/        PRD.md, architecture.md
-```
+## Quick start (no keys needed)
 
-## Run locally
-
-**Option A: Docker** (database + API + web):
 ```bash
-cp .env.example .env          # fill in the free keys you have
-docker compose up --build
-# API docs http://localhost:8000/docs · web http://localhost:5173
+cp .env.example .env
+docker compose up --build -d                       # Postgres+PostGIS+pgvector, API, web
+docker compose exec api python -m scripts.seed_synthetic
+# open http://localhost:5173  (API docs: http://localhost:8000/docs)
 ```
 
-**Option B: without Docker**
+`seed_synthetic` creates six **clearly labelled synthetic** fields (red badge in the app, red banner
+in the PDF) so every page can be explored offline. Remove them with
+`python -m scripts.seed_synthetic --delete`. Never present them as real results.
+
+### Without Docker
+
 ```bash
-# Database: PostgreSQL 16 with PostGIS 3 and pgvector, then
+# Database: PostgreSQL 16 with PostGIS 3 and pgvector
 psql "$DATABASE_URL" -f database/schema.sql
 
 # Backend (Python 3.11)
 cd backend
 python3.11 -m venv .venv && source .venv/bin/activate
-pip install -r requirements-dev.txt
-uvicorn app.main:app --reload       # http://localhost:8000
-pytest                              # DB tests need TEST_DATABASE_URL (they reset that database)
+pip install -r requirements-dev.txt          # add requirements-ai.txt for local embeddings + Whisper
+uvicorn app.main:app --reload                # http://localhost:8000/docs
+TEST_DATABASE_URL=postgresql://... pytest    # tests reset that database: use a throwaway one
 
 # Frontend (Node 20.19+)
-cd frontend && npm install && npm run dev
+cd frontend && npm install && npm run dev    # http://localhost:5173
 ```
 
-**Using Supabase instead of local Postgres:** create a free project, open
-*SQL Editor*, paste `database/schema.sql` and run it (PostGIS and pgvector are
-enabled by the script). Put the *Session pooler* connection string in `DATABASE_URL`.
+System packages for PDF and OCR (already in the Docker images):
+`apt install libpango-1.0-0 libpangoft2-1.0-0 tesseract-ocr tesseract-ocr-tel tesseract-ocr-hin`.
 
-## Building field history (data pipeline)
+## Real fields: building history
 
 ```bash
-earthengine authenticate              # once; uses your free non-commercial GEE project
+earthengine authenticate                      # once, with your free non-commercial project
 cd backend
-python -m scripts.seed_demo           # demo fields, 2017 -> yesterday
-python -m scripts.seed_demo --start 2023-01-01 --limit 2   # quicker first try
+python -m scripts.load_reference apy ../data/district_apy.csv      # district yields (see below)
+python -m scripts.seed_demo --start 2023-01-01 --limit 2           # 8 Krishna demo pins, quick try
+python -m scripts.seed_demo                                        # full 2017 → yesterday
+python -m scripts.fetch_prices                                     # today's mandi prices (run daily)
+python -m scripts.train_models && python -m scripts.analyze_all    # once 30+ confident seasons exist
 ```
 
-For each field this pulls, caches in `api_cache`, and writes one row per day to `field_timeseries`:
+Or add fields in the app: every new field is ingested and analysed in the background
+(FastAPI BackgroundTasks). Each external response is cached in `api_cache`, so a field that was
+built once never needs the network again — the demo runs offline.
 
 | Source | What | Years | Key |
 |---|---|---|---|
-| Sentinel-2 (Earth Engine, L1C + Cloud Score+ mask) | NDVI, cloud % | 2017→ | `GEE_PROJECT` |
-| Sentinel-1 (Earth Engine, GRD IW) | VV, VH backscatter (dB) | 2017→ | `GEE_PROJECT` |
-| NISAR L-band GCOV (NASA ASF) | HH, HV backscatter (dB); reads only the field's pixels | mid-2025→ | `EARTHDATA_TOKEN` |
-| NISAR S-band GCOV (ISRO Bhoonidhi) | HH, HV backscatter (dB) | Jul 2026→ | manual download, see below |
-| Open-Meteo archive (NASA POWER fallback) | rain, temperature, ET0, soil moisture | 2017→ | none |
-| SoilGrids | clay/sand/silt, SOC, pH, N, CEC, bulk density, texture | static | none |
+| Sentinel-2 (Earth Engine, L1C + Cloud Score+) | NDVI, cloud % | 2017→ | `GEE_PROJECT` |
+| Sentinel-1 (Earth Engine, GRD IW) | VV, VH backscatter | 2017→ | `GEE_PROJECT` |
+| NISAR L-band GCOV (NASA ASF) | HH, HV backscatter; only the field's pixels are downloaded | mid-2025→ | `EARTHDATA_TOKEN` |
+| NISAR S-band GCOV (ISRO Bhoonidhi) | HH, HV backscatter; put downloaded `.h5` files in `data/nisar_s/` | Jul 2026→ | Bhoonidhi account |
+| Open-Meteo archive, NASA POWER fallback | rain, temperature, ET0, soil moisture | 2017→ | none |
+| SoilGrids | texture, clay/sand/silt, SOC, pH, N, CEC | static | none |
+| Ministry APY / ICRISAT district data | district yields (model labels, baseline, crop prior) | ICRISAT to ~2017, APY recent | none (download) |
+| Agmarknet via data.gov.in | mandi prices; MSP 2026-27 fallback | daily | `DATA_GOV_API_KEY` |
 
-On cloudy monsoon dates, NDVI is predicted from radar (best available: NISAR L, NISAR S, then
-Sentinel-1) using a model fitted on that field's own clear-sky dates. It is used only if its
-cross-validated R² ≥ 0.5, and filled values are flagged `ndvi_source = 'sar_fill'`.
-
-**NISAR S-band files:** log in to [Bhoonidhi](https://bhoonidhi.nrsc.gov.in), open *Browse & Order*,
-search your area for NISAR S-SAR GCOV products, download the `.h5` files into `data/nisar_s/`,
-and re-run the seed script.
-
-A source that fails (key missing, API down) is recorded in `fields.ingest_error`; the others still load.
-The demo fields in `database/seeds/demo_fields.geojson` are 90 m squares around pins, not surveyed
-boundaries: redraw them on the map before trusting field-level numbers.
-
-**Earth Engine cost:** one request per field per year per sensor, returning only field averages:
-roughly 10 years × 2 sensors = 20 small requests per field, a tiny fraction of the 150 EECU-hour monthly quota.
-
-## Field analysis (ML models)
-
-After ingestion, `seed_demo` also runs `analyze_field`, which writes Layer 3:
-
-| Model | Method | Output |
-|---|---|---|
-| Season detection (F2) | Humps in smoothed NDVI; sowing from radar puddling signal (paddy) or green-up − 15 days | `seasons`: sowing, peak, harvest dates; `in_progress` |
-| Crop detection (F3) | Phenology rules × district crop-area prior (+ trained model once farmers confirm 20+ seasons) | crop, confidence, alternatives; < 0.60 = "uncertain" |
-| Stress detection (F4) | Dry spells (only where rain is normally expected), heavy rain + radar standing water, sudden NDVI drops, heat at flowering | `events` with evidence numbers |
-| Yield (F5) | XGBoost quantile models (P10/P50/P90) when trained; otherwise district yield history × greenness vs the field's usual | range in t/ha, never one number |
-| Likely reasons (F6) | SHAP on the P50 model; baseline: greenness + stress events | `seasons.shap_reasons`, worded "likely" |
-| Field twins (F7) | k-NN with pgvector on scaled soil, timing, greenness and weather | 5 nearest field-seasons + what they did differently |
-
-Training data and models:
-```bash
-cd backend
-# 1. District crop statistics (free downloads, see scripts/load_reference.py)
-python -m scripts.load_reference apy ../data/district_apy.csv      # Ministry APY / data.gov.in (2017+)
-python -m scripts.load_reference icrisat ../data/icrisat_dld.csv   # ICRISAT DLD (history to ~2017)
-# 2. Train (needs 30+ confident field-seasons with district yields), then refresh all fields
-python -m scripts.train_models
-python -m scripts.analyze_all
-```
-Or use `notebooks/01_field_history_and_models.ipynb` on free Colab/Kaggle. Trained models are saved
-in `backend/models/` (gitignored).
-
-**Honest limits.** No free field-level yield data exists for India, so yields are trained on district
-averages and shown as ranges. Black gram and green gram look identical from space and are reported as
-"pulses". Crop rules use approximate published crop calendars for coastal Andhra Pradesh; other
-regions need their own ranges in `ml/crop_classifier.py`.
+District yield files: download district-wise crop area/production/yield for your state as CSV
+from [data.desagri.gov.in](https://data.desagri.gov.in) or the data.gov.in "District-wise,
+season-wise crop production statistics" dataset, and/or the ICRISAT District Level Database.
 
 ## Getting the free keys
-None of these need a credit card.
+None of these need a credit card. Put them in `.env` (never commit it).
 
 | Variable | Where | Notes |
 |---|---|---|
-| `GEE_PROJECT` | [code.earthengine.google.com/register](https://code.earthengine.google.com/register) → *Unpaid usage* → *Academia/research or non-profit/hackathon* → create a Cloud project | Keep the project on the **Community tier** (150 EECU-hours/month). The Contributor tier needs a billing account, so don't pick it. Then run `earthengine authenticate`. |
-| `GEMINI_API_KEY` | [aistudio.google.com/apikey](https://aistudio.google.com/apikey) | Free tier covers Flash / Flash-Lite models; check live limits in AI Studio. Free-tier prompts may be used to improve Google products, so we only send aggregated field numbers. |
-| `GROQ_API_KEY` | [console.groq.com/keys](https://console.groq.com/keys) | Free tier, per-model limits at console.groq.com/settings/limits. |
-| `SUPABASE_URL`, `SUPABASE_KEY` | [supabase.com](https://supabase.com) → New project → *Project Settings → API* | Free: 500 MB DB. **Pauses after 7 days idle**; restore it from the dashboard before a demo. |
-| `DATA_GOV_API_KEY` | [data.gov.in](https://data.gov.in) → sign up → *My Account → API key* | Agmarknet mandi prices and crop statistics. |
-| `BHASHINI_KEY` | [bhashini.gov.in](https://bhashini.gov.in) → ULCA sign up → generate API key | Approval can take a few days; apply early. Local Whisper is the fallback. |
-| `EARTHDATA_TOKEN` | [urs.earthdata.nasa.gov](https://urs.earthdata.nasa.gov) → register → *Generate Token* | NISAR L-band products (ASF DAAC). |
-| `BHOONIDHI_USERNAME`, `BHOONIDHI_PASSWORD` | [bhoonidhi.nrsc.gov.in](https://bhoonidhi.nrsc.gov.in) → register | NISAR S-band products (ISRO open data). |
+| `GEE_PROJECT` | [code.earthengine.google.com/register](https://code.earthengine.google.com/register) → *Unpaid usage* → non-commercial → create a Cloud project | Keep the **Community tier** (150 EECU-hours/month, no billing account). The Contributor tier needs billing — don't pick it. Then `earthengine authenticate`. |
+| `EE_SERVICE_ACCOUNT_KEY` | Cloud console → IAM → Service accounts → create → Keys → JSON; register it for Earth Engine in the same project | Servers only (Hugging Face / Render). Paste the JSON as a secret. |
+| `GROQ_API_KEY` | [console.groq.com/keys](https://console.groq.com/keys) | Default model `openai/gpt-oss-120b` (Apache-2.0 weights). Limits per org at console.groq.com/settings/limits. |
+| `GEMINI_API_KEY` | [aistudio.google.com/apikey](https://aistudio.google.com/apikey) | Free tier covers Flash models; limits change, check AI Studio. Free-tier prompts may be used by Google, so only field numbers are sent — never names or phones. |
+| `SUPABASE_URL`, `SUPABASE_KEY`, `DATABASE_URL` | [supabase.com](https://supabase.com) → New project. Run `database/schema.sql` in *SQL Editor*; copy the *Session pooler* string into `DATABASE_URL` | 500 MB free; **pauses after 7 idle days** — restore it from the dashboard before a demo. |
+| `DATA_GOV_API_KEY` | [data.gov.in](https://data.gov.in) → sign up → *My Account → API key* | Agmarknet prices. |
+| `BHASHINI_KEY`, `BHASHINI_USER_ID` | [bhashini.gov.in](https://bhashini.gov.in) → ULCA sign-up → profile → generate API key | Approval can take days. Without it: browser speech, then local Whisper. |
+| `EARTHDATA_TOKEN` | [urs.earthdata.nasa.gov](https://urs.earthdata.nasa.gov) → *Generate Token* | NISAR L-band. |
+| `BHOONIDHI_USERNAME/PASSWORD` | [bhoonidhi.nrsc.gov.in](https://bhoonidhi.nrsc.gov.in) → register | NISAR S-band downloads. |
 
-No key needed: Open-Meteo, NASA POWER, SoilGrids, Ollama (local).
+No key needed: Open-Meteo, NASA POWER, SoilGrids, Ollama (`ollama pull qwen2.5:7b` for offline Q&A).
+
+## Deploy (free tiers)
+
+1. **Database — Supabase:** create a project, run `database/schema.sql` in the SQL Editor.
+2. **API — Hugging Face Spaces (Docker, free CPU 16 GB):** create a Space with SDK *Docker*; push
+   this repo's `Dockerfile`, `backend/`, `database/` and `deploy/huggingface-README.md` (renamed
+   to `README.md`). Add the `.env.example` variables as Space secrets, including
+   `CORS_ORIGINS=https://<your-app>.vercel.app`. Free Spaces sleep after ~48 h without visits.
+   *Alternative:* Render free (`render.yaml`, 512 MB, set `WITH_AI=0`, sleeps after 15 min idle).
+3. **Web — Vercel (Hobby, non-commercial):** import the repo, root directory `frontend`, set
+   `VITE_API_URL=https://<your-space>.hf.space`. `frontend/vercel.json` handles page routes.
+4. **CI — GitHub Actions** (`.github/workflows/ci.yml`): lint, 70 backend tests on PostGIS +
+   pgvector, frontend build. Free for public repos; private repos get 2,000 free minutes/month.
+
+Before a demo: open the Space (wakes it), restore Supabase if paused, and make sure the demo
+fields were ingested while online.
 
 ## Free-tier limits to know
-- **Earth Engine Community tier**: 150 EECU-hours/month per project; beyond it, requests still run but slowly. Re-verify non-commercial status yearly.
-- **Supabase free**: 500 MB database, pauses after 7 idle days. Timeseries are stored as field averages (not rasters) to stay small.
-- **Hosting**: Hugging Face Spaces free CPU (16 GB RAM) is recommended for the API because Whisper and the embedding model don't fit in Render's 512 MB free instance. Render free sleeps after 15 min idle.
-- **Vercel Hobby**: non-commercial use only.
-- **LLMs**: Groq and Gemini free tiers rate-limit per minute and per day; Ollama with Qwen2.5 is the offline fallback.
+- **Earth Engine Community tier:** 150 EECU-hours/month per project. Kshetra makes ~20 small
+  requests per field (10 years × 2 sensors) plus one for an auto-boundary. Over the limit, requests
+  still run, slowly. Re-verify non-commercial status yearly.
+- **Supabase:** 500 MB (≈ 0.5 MB per field-decade of daily rows); pauses after 7 idle days.
+- **Groq / Gemini:** per-minute and per-day request limits; the app falls back Groq → Gemini →
+  Ollama, and says "I don't know" if none answers.
+- **Hugging Face Spaces:** sleeps when idle; first request after waking takes ~1 minute.
+- **Vercel Hobby and Open-Meteo:** non-commercial use only.
+- **Bhashini:** needs approval; **gTTS** uses an unofficial endpoint (used only if the browser has
+  no Telugu/Hindi voice).
+
+## Repository layout
+```
+frontend/    React + Vite + Tailwind + Leaflet/Geoman + Recharts (9 pages)
+backend/app/ api/ (one router per feature) · services/ (Earth Engine, NISAR, weather, soil,
+             prices, LLM + tools, memory, voice, OCR, PDF, boundary, cache, ingest)
+             ml/ (gap fill, seasons, features, crop, stress, yield, SHAP, twins, simulator)
+backend/scripts/  seed_demo, seed_synthetic, load_reference, fetch_prices, train_models, analyze_all
+database/    schema.sql (4 memory layers), seeds/, Dockerfile (local PostGIS + pgvector)
+notebooks/   Colab/Kaggle notebook: plot a field, train the yield model
+docs/        PRD.md, architecture.md
+```
+
+## Honest limits
+- **No free field-level yield data exists for India.** The yield model learns from district averages,
+  so every yield is a range. Until a model is trained, yields come from district history adjusted by
+  the field's greenness.
+- **Crop rules** use approximate published crop calendars for coastal Andhra Pradesh; black gram and
+  green gram look identical from space and are reported as "pulses". Farmer confirmations override.
+- **What-if and planner** apply rule-based nitrogen and irrigation effects, and seed/other costs in
+  `database/seeds/crop_varieties.csv` are rough estimates — edit them with real CACP figures.
+  Assumptions are listed next to every result.
+- **No login yet:** fields belong to a demo farmer. Add auth before real farmers use it.
+- Not yet run against live Earth Engine / NISAR / Bhashini from this repo's CI (they need your keys);
+  those clients are tested against recorded-format responses.
 
 ## License
-MIT. All dependencies are open source (MIT / Apache-2.0 / BSD / GPL / LGPL).
+MIT. Every dependency is open source: FastAPI, psycopg, NumPy, pandas, SciPy, scikit-learn (BSD),
+XGBoost, earthengine-api, Tesseract, sentence-transformers (Apache-2.0), SHAP, faster-whisper, gTTS,
+pyproj (MIT), WeasyPrint, Shapely, h5py, Jinja2 (BSD), React, Vite, Tailwind, Leaflet, Recharts (MIT),
+Leaflet-Geoman free (MIT), PostGIS (GPL-2.0), pgvector (PostgreSQL License). Data: Copernicus
+Sentinel (free and open), NISAR (open data), SoilGrids (CC-BY 4.0), Open-Meteo (CC-BY 4.0),
+Government of India open data (GODL).

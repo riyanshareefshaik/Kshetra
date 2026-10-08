@@ -19,6 +19,7 @@ services:
 
   api:
     build: ./backend
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
     env_file: .env
     environment:
       DATABASE_URL: postgresql://kshetra:kshetra@db:5432/kshetra
@@ -26,6 +27,7 @@ services:
       - "8000:8000"
     volumes:
       - ./backend:/app
+      - ./database/seeds:/app/seeds:ro
       - ./data:/data
       # Earth Engine login created by `earthengine authenticate` on your machine
       - ~/.config/earthengine:/root/.config/earthengine:ro

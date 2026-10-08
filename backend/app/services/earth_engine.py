@@ -32,10 +32,20 @@ def init_ee():
     import ee
 
     if not _initialized:
-        project = get_settings().gee_project
+        settings = get_settings()
+        project = settings.gee_project
         if not project:
             raise RuntimeError("GEE_PROJECT is not set; see README 'Getting the free keys'.")
-        ee.Initialize(project=project)
+        if settings.ee_service_account_key:
+            # Servers (Hugging Face / Render) log in with a service account registered to the
+            # same non-commercial Cloud project; laptops use `earthengine authenticate`.
+            import json
+
+            key = json.loads(settings.ee_service_account_key)
+            creds = ee.ServiceAccountCredentials(key["client_email"], key_data=settings.ee_service_account_key)
+            ee.Initialize(creds, project=project)
+        else:
+            ee.Initialize(project=project)
         _initialized = True
     return ee
 

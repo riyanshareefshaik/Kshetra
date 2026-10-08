@@ -1,0 +1,45 @@
+name: CI
+on:
+  push:
+  pull_request:
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Start PostGIS + pgvector
+        run: |
+          docker build -t kshetra-db database
+          docker run -d --name db -e POSTGRES_USER=kshetra -e POSTGRES_PASSWORD=kshetra -e POSTGRES_DB=kshetra -p 5432:5432 kshetra-db
+          for i in $(seq 1 30); do docker exec db pg_isready -U kshetra -d kshetra && break; sleep 2; done
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: backend/requirements*.txt
+      - name: System libraries (PDF, OCR)
+        run: sudo apt-get update && sudo apt-get install -y tesseract-ocr tesseract-ocr-tel tesseract-ocr-hin libpango-1.0-0 libpangoft2-1.0-0
+      - name: Install
+        working-directory: backend
+        run: pip install -r requirements-dev.txt ruff==0.12.0
+      - name: Lint
+        working-directory: backend
+        run: ruff check app scripts tests
+      - name: Test
+        working-directory: backend
+        env:
+          TEST_DATABASE_URL: postgresql://kshetra:kshetra@localhost:5432/kshetra
+        run: pytest -q
+
+  frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - working-directory: frontend
+        run: npm ci && npm run build

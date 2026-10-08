@@ -1,0 +1,32 @@
+# Optional: Render free web service (512 MB RAM, sleeps after 15 min idle).
+# Hugging Face Spaces is recommended instead (16 GB RAM fits the local AI models).
+services:
+  - type: web
+    name: kshetra-api
+    runtime: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    envVars:
+      - key: WITH_AI
+        value: "0"
+      - key: PORT
+        value: "8000"
+      - key: DATABASE_URL
+        sync: false
+      - key: GEE_PROJECT
+        sync: false
+      - key: EE_SERVICE_ACCOUNT_KEY
+        sync: false
+      - key: GROQ_API_KEY
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: DATA_GOV_API_KEY
+        sync: false
+      - key: BHASHINI_KEY
+        sync: false
+      - key: BHASHINI_USER_ID
+        sync: false
+      - key: CORS_ORIGINS
+        sync: false

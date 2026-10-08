@@ -10,6 +10,7 @@ class Settings(BaseSettings):
     database_url: str = "postgresql://kshetra:kshetra@localhost:5432/kshetra"
 
     gee_project: str = ""
+    ee_service_account_key: str = ""   # JSON key contents (servers only)
     gemini_api_key: str = ""
     groq_api_key: str = ""
     supabase_url: str = ""

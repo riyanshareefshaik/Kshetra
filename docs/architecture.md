@@ -65,6 +65,34 @@ The model sees only tool results. Tools: `get_field_summary`, `get_season`,
 Provider order: Groq → Gemini → local Ollama (Qwen2.5, Apache 2.0).
 Every question and answer is embedded (multilingual MiniLM, 384 dims) and stored in `semantic_memory`.
 
+## API (backend/app/api, OpenAPI docs at /docs)
+| Router | Endpoints |
+|---|---|
+| fields | `POST /api/fields`, `GET /api/fields`, `GET/PATCH/DELETE /api/fields/{id}`, `POST /api/fields/{id}/refresh`, `POST /api/fields/auto-boundary`, `GET /api/fields/{id}/timeseries` |
+| seasons | `GET /api/fields/{id}/seasons`, `GET /api/fields/{id}/events`, `GET/PATCH /api/seasons/{id}`, `GET /api/seasons/{id}/why`, `GET /api/seasons/{id}/twins` |
+| planning | `GET /api/crop-varieties`, `POST /api/fields/{id}/what-if`, `GET /api/fields/{id}/plan` |
+| ask | `POST /api/fields/{id}/ask`, `POST /api/fields/{id}/ask/voice`, `GET /api/fields/{id}/ask/history` |
+| diary | `POST/GET /api/fields/{id}/diary`, `POST /api/seed-packet` |
+| voice | `POST /api/voice/transcribe`, `POST /api/voice/speak` |
+| report | `GET /api/fields/{id}/report.pdf` (header `X-Report-SHA256`) |
+| users | `GET /api/users/demo`, `POST /api/users`, `GET /api/users/{id}`, `PUT /api/users/{id}/consent`, `GET /api/insights` |
+
+## What-if simulator (F8) and planner (F9)
+A scenario is replayed over every past year of the field's own weather: season features are
+rebuilt for the chosen sowing date and duration, crop greenness is the field's norm for that crop,
+and the yield model (or district baseline) predicts each year. The spread across years gives the
+range; the share of bad years, long dry spells and heavy rain before harvest gives the risk; price
+(Agmarknet median, else MSP) minus costs gives profit. Nitrogen and irrigation effects are
+rule-based and listed as assumptions. The planner runs this for every variety of the target season
+and ranks by profit minus half the downside. Typical response time: 50-100 ms.
+
+## Voice, OCR and PDF
+- Speech-to-text: browser Web Speech API → Bhashini (ULCA pipeline) → local faster-whisper.
+- Text-to-speech: browser speechSynthesis → gTTS.
+- Diary parsing: rule-based te/hi/en keywords for activity, product, quantity, unit, cost.
+- Seed packets: Tesseract eng+tel+hin, regexes for Seeds Act label fields.
+- PDF: Jinja2 + WeasyPrint, charts as inline SVG, SHA-256 digest of the report data.
+
 ## Privacy (F13, F14)
 `users.data_sharing_consent` defaults to `false`. The seed company view
 (`v_seed_insights`) uses consenting fields only, drops owner and geometry,
