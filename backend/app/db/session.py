@@ -1,6 +1,6 @@
 """Postgres connections. The database is Kshetra's memory (4 layers, see database/schema.sql)."""
+from collections.abc import Iterator
 from contextlib import contextmanager
-from typing import Iterator
 
 import psycopg
 from psycopg.rows import dict_row
