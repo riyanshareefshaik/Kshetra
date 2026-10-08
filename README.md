@@ -13,7 +13,7 @@ it uses is free and open source. See [docs/PRD.md](docs/PRD.md) and
 |---|---|
 | 1. Repo scaffold | ✅ |
 | 2. Database schema (4 memory layers) | ✅ |
-| 3. Earth Engine + NISAR + weather + soil pipeline | ⏳ |
+| 3. Earth Engine + NISAR + weather + soil pipeline | ✅ |
 | 4. ML models | ⏳ |
 | 5. Backend APIs | ⏳ |
 | 6. LLM tool calling | ⏳ |
@@ -50,7 +50,7 @@ cd backend
 python3.11 -m venv .venv && source .venv/bin/activate
 pip install -r requirements-dev.txt
 uvicorn app.main:app --reload       # http://localhost:8000
-pytest
+pytest                              # DB tests need TEST_DATABASE_URL (they reset that database)
 
 # Frontend (Node 20.19+)
 cd frontend && npm install && npm run dev
@@ -59,6 +59,41 @@ cd frontend && npm install && npm run dev
 **Using Supabase instead of local Postgres:** create a free project, open
 *SQL Editor*, paste `database/schema.sql` and run it (PostGIS and pgvector are
 enabled by the script). Put the *Session pooler* connection string in `DATABASE_URL`.
+
+## Building field history (data pipeline)
+
+```bash
+earthengine authenticate              # once; uses your free non-commercial GEE project
+cd backend
+python -m scripts.seed_demo           # demo fields, 2017 -> yesterday
+python -m scripts.seed_demo --start 2023-01-01 --limit 2   # quicker first try
+```
+
+For each field this pulls, caches in `api_cache`, and writes one row per day to `field_timeseries`:
+
+| Source | What | Years | Key |
+|---|---|---|---|
+| Sentinel-2 (Earth Engine, L1C + Cloud Score+ mask) | NDVI, cloud % | 2017→ | `GEE_PROJECT` |
+| Sentinel-1 (Earth Engine, GRD IW) | VV, VH backscatter (dB) | 2017→ | `GEE_PROJECT` |
+| NISAR L-band GCOV (NASA ASF) | HH, HV backscatter (dB); reads only the field's pixels | mid-2025→ | `EARTHDATA_TOKEN` |
+| NISAR S-band GCOV (ISRO Bhoonidhi) | HH, HV backscatter (dB) | Jul 2026→ | manual download, see below |
+| Open-Meteo archive (NASA POWER fallback) | rain, temperature, ET0, soil moisture | 2017→ | none |
+| SoilGrids | clay/sand/silt, SOC, pH, N, CEC, bulk density, texture | static | none |
+
+On cloudy monsoon dates, NDVI is predicted from radar (best available: NISAR L, NISAR S, then
+Sentinel-1) using a model fitted on that field's own clear-sky dates. It is used only if its
+cross-validated R² ≥ 0.5, and filled values are flagged `ndvi_source = 'sar_fill'`.
+
+**NISAR S-band files:** log in to [Bhoonidhi](https://bhoonidhi.nrsc.gov.in), open *Browse & Order*,
+search your area for NISAR S-SAR GCOV products, download the `.h5` files into `data/nisar_s/`,
+and re-run the seed script.
+
+A source that fails (key missing, API down) is recorded in `fields.ingest_error`; the others still load.
+The demo fields in `database/seeds/demo_fields.geojson` are 90 m squares around pins, not surveyed
+boundaries: redraw them on the map before trusting field-level numbers.
+
+**Earth Engine cost:** one request per field per year per sensor, returning only field averages:
+roughly 10 years × 2 sensors = 20 small requests per field, a tiny fraction of the 150 EECU-hour monthly quota.
 
 ## Getting the free keys
 None of these need a credit card.

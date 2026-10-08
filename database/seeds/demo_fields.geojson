@@ -1,0 +1,293 @@
+{
+ "type": "FeatureCollection",
+ "features": [
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "Demo 1 - Kankipadu",
+    "district": "Krishna",
+    "state": "Andhra Pradesh",
+    "boundary_source": "pin_buffer"
+   },
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       80.778579,
+       16.440096
+      ],
+      [
+       80.779421,
+       16.440096
+      ],
+      [
+       80.779421,
+       16.440904
+      ],
+      [
+       80.778579,
+       16.440904
+      ],
+      [
+       80.778579,
+       16.440096
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "Demo 2 - Vuyyuru",
+    "district": "Krishna",
+    "state": "Andhra Pradesh",
+    "boundary_source": "pin_buffer"
+   },
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       80.832579,
+       16.355596
+      ],
+      [
+       80.833421,
+       16.355596
+      ],
+      [
+       80.833421,
+       16.356404
+      ],
+      [
+       80.832579,
+       16.356404
+      ],
+      [
+       80.832579,
+       16.355596
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "Demo 3 - Pamarru",
+    "district": "Krishna",
+    "state": "Andhra Pradesh",
+    "boundary_source": "pin_buffer"
+   },
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       80.948579,
+       16.314596
+      ],
+      [
+       80.949421,
+       16.314596
+      ],
+      [
+       80.949421,
+       16.315404
+      ],
+      [
+       80.948579,
+       16.315404
+      ],
+      [
+       80.948579,
+       16.314596
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "Demo 4 - Gudivada",
+    "district": "Krishna",
+    "state": "Andhra Pradesh",
+    "boundary_source": "pin_buffer"
+   },
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       80.963579,
+       16.450596
+      ],
+      [
+       80.964421,
+       16.450596
+      ],
+      [
+       80.964421,
+       16.451404
+      ],
+      [
+       80.963579,
+       16.451404
+      ],
+      [
+       80.963579,
+       16.450596
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "Demo 5 - Movva",
+    "district": "Krishna",
+    "state": "Andhra Pradesh",
+    "boundary_source": "pin_buffer"
+   },
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       80.901579,
+       16.232596
+      ],
+      [
+       80.902421,
+       16.232596
+      ],
+      [
+       80.902421,
+       16.233404
+      ],
+      [
+       80.901579,
+       16.233404
+      ],
+      [
+       80.901579,
+       16.232596
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "Demo 6 - Pedana",
+    "district": "Krishna",
+    "state": "Andhra Pradesh",
+    "boundary_source": "pin_buffer"
+   },
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       81.129579,
+       16.261596
+      ],
+      [
+       81.130421,
+       16.261596
+      ],
+      [
+       81.130421,
+       16.262404
+      ],
+      [
+       81.129579,
+       16.262404
+      ],
+      [
+       81.129579,
+       16.261596
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "Demo 7 - Nandigama",
+    "district": "Krishna",
+    "state": "Andhra Pradesh",
+    "boundary_source": "pin_buffer"
+   },
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       80.272579,
+       16.764596
+      ],
+      [
+       80.273421,
+       16.764596
+      ],
+      [
+       80.273421,
+       16.765404
+      ],
+      [
+       80.272579,
+       16.765404
+      ],
+      [
+       80.272579,
+       16.764596
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "Demo 8 - Mylavaram",
+    "district": "Krishna",
+    "state": "Andhra Pradesh",
+    "boundary_source": "pin_buffer"
+   },
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       80.619579,
+       16.749596
+      ],
+      [
+       80.620421,
+       16.749596
+      ],
+      [
+       80.620421,
+       16.750404
+      ],
+      [
+       80.619579,
+       16.750404
+      ],
+      [
+       80.619579,
+       16.749596
+      ]
+     ]
+    ]
+   }
+  }
+ ]
+}

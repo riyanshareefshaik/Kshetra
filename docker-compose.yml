@@ -27,6 +27,8 @@ services:
     volumes:
       - ./backend:/app
       - ./data:/data
+      # Earth Engine login created by `earthengine authenticate` on your machine
+      - ~/.config/earthengine:/root/.config/earthengine:ro
     depends_on:
       db:
         condition: service_healthy

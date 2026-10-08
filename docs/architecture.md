@@ -28,12 +28,20 @@
 5. All pages read only from Postgres, so the demo works without live APIs.
 
 ## Satellite fusion
-- **Sentinel-2 NDVI**: cloud-masked (SCL + s2cloudless), field-mean every pass.
-- **Sentinel-1 VV/VH** (dB): field-mean every pass, speckle reduced by averaging over the polygon.
-- **NISAR**: L-band GCOV (HH, HV) from ASF via Earthdata; S-band GCOV from Bhoonidhi. Field-mean backscatter.
-- Gaps in NDVI during cloudy periods are filled by a regression from radar
-  features to NDVI, fitted per region on dates where both exist. Filled
-  values are flagged (`ndvi_source = 'sar_fill'`) and shown differently in the UI.
+- **Sentinel-2 NDVI**: Level-1C harmonized (consistent from 2017; surface reflectance over India
+  only starts late 2018), masked with Cloud Score+ (clouds and shadows); a date is kept when
+  at least 60% of the field is clear.
+- **Sentinel-1 VV/VH** (dB): averaged in linear power over the polygon; only the orbit direction
+  with the most passes is kept, since ascending and descending geometry differ.
+- **NISAR**: L-band GCOV (HH, HV) found via NASA CMR and read from ASF with HTTP range requests
+  (only the pixels over the field are downloaded); S-band GCOV files from Bhoonidhi read locally.
+- Gaps in NDVI during cloudy periods are filled by a random forest from radar
+  features (co-pol, cross-pol, their ratio; no calendar features, so real anomalies
+  are not smoothed away) to NDVI, fitted per field on dates where both exist.
+  Kept only if cross-validated R² ≥ 0.5. Filled values are flagged
+  (`ndvi_source = 'sar_fill'`) and shown differently in the UI.
+- Daily `ndvi_smoothed`: Savitzky-Golay (31 days) over observed + filled NDVI,
+  left empty across gaps longer than 60 days.
 
 ## LLM (F10)
 The model sees only tool results. Tools: `get_field_summary`, `get_season`,
