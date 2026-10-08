@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { api } from "../api.js";
 import { Card, ErrorBox, NeedField, Page } from "../components/ui.jsx";
 import { browserRecognition, listenOnce, speak, startRecording } from "../components/speech.js";
-import { t } from "../i18n.js";
+import { cropName, t } from "../i18n.js";
 import { useApp } from "../state.jsx";
 
 const EXAMPLES = {
@@ -11,20 +11,11 @@ const EXAMPLES = {
   hi: ["मेरी पिछली खरीफ़ उपज कम क्यों थी?", "मेरे खेत में कौन सी फसलें उगाई गईं?", "10 जुलाई को धान बोऊँ तो कितना मुनाफ़ा होगा?"],
 };
 
-const SOURCE_NAMES = {
-  get_field_summary: "Your field record and season list",
-  get_season: "Season record",
-  get_yield_explanation: "Yield estimate and likely reasons",
-  find_field_twins: "Similar fields",
-  search_diary: "Your diary notes",
-  run_what_if: "What-if simulation on your field's past weather",
-};
-
-function sourceLabel(s) {
+function sourceLabel(s, lang) {
   const a = s.args || {};
-  const when = a.season && a.year ? ` (${a.season} ${a.year})` : "";
-  const what = a.crop ? ` (${a.crop}${a.sowing_date ? `, sown ${a.sowing_date}` : ""})` : a.query ? ` ("${a.query}")` : "";
-  return `${SOURCE_NAMES[s.tool] || "Field data"}${when}${what}`;
+  const when = a.season && a.year ? ` (${t(a.season, lang)} ${a.year})` : "";
+  const what = a.crop ? ` (${cropName(a.crop, lang)}${a.sowing_date ? `, ${a.sowing_date}` : ""})` : a.query ? ` ("${a.query}")` : "";
+  return `${t(`src.${s.tool}`, lang)}${when}${what}`;
 }
 
 export default function AskPage() {
@@ -99,7 +90,7 @@ function Ask() {
   }
 
   return (
-    <Page title={t("ask", lang)}>
+    <Page title={t("ask.title", lang)}>
       <Card>
         <form className="flex flex-wrap gap-2" onSubmit={(e) => { e.preventDefault(); send(question); }}>
           <input className="min-w-0 flex-1 rounded border border-black/15 px-3 py-2" value={question} lang={lang}
@@ -115,23 +106,23 @@ function Ask() {
             <button key={q} onClick={() => send(q)} className="rounded-full border border-black/10 bg-[var(--page)] px-3 py-1 text-xs">{q}</button>
           ))}
         </div>
-        <p className="mt-2 text-xs text-[var(--text-muted)]">Answers come only from your field's data, with the numbers they used. If the data cannot answer, Kshetra says so.</p>
+        <p className="mt-2 text-xs text-[var(--text-muted)]">{t("ask.only", lang)}</p>
       </Card>
       <ErrorBox error={error} />
-      {busy && <p className="text-sm text-[var(--text-secondary)]">Thinking…</p>}
+      {busy && <p className="text-sm text-[var(--text-secondary)]">{t("ask.thinking", lang)}</p>}
       <div className="space-y-3">
         {[...chat].reverse().map((m, i) => (
           <Card key={m.id || i}>
             <p className="text-sm font-medium">{m.question}</p>
             <p className={`mt-2 whitespace-pre-wrap ${m.answered === false ? "text-[var(--text-secondary)]" : ""}`}>{m.answer}</p>
             <div className="mt-2 flex flex-wrap items-center gap-3 text-xs">
-              <button onClick={() => speak(m.answer, m.language || lang).catch(setError)} className="rounded border border-black/10 px-2 py-0.5">🔊 Listen</button>
+              <button onClick={() => speak(m.answer, m.language || lang).catch(setError)} className="rounded border border-black/10 px-2 py-0.5">🔊 {t("listen", lang)}</button>
             </div>
             {m.sources?.length > 0 && (
               <details className="mt-2 text-xs">
                 <summary className="cursor-pointer text-[var(--text-secondary)]">{t("sources", lang)} ({m.sources.length})</summary>
                 <ul className="mt-1 list-disc space-y-0.5 pl-5 text-[var(--text-secondary)]">
-                  {m.sources.map((s, j) => <li key={j}>{sourceLabel(s)}</li>)}
+                  {m.sources.map((s, j) => <li key={j}>{sourceLabel(s, lang)}</li>)}
                 </ul>
               </details>
             )}

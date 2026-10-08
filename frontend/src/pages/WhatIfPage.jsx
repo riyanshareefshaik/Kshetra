@@ -1,30 +1,28 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { api } from "../api.js";
-import { C, GapBar, axisProps } from "../components/tokens.jsx";
-import { Card, ErrorBox, Loading, NeedField, Page, StatTile, rs } from "../components/ui.jsx";
-import { t } from "../i18n.js";
+import { C, axisProps } from "../components/tokens.jsx";
+import { Card, ErrorBox, LevelIcon, Loading, NeedField, Page, StatTile, rs } from "../components/ui.jsx";
+import { cropName, fmtDate, t } from "../i18n.js";
 import { useApp } from "../state.jsx";
 
-const IRRIGATION = { rainfed: "Rainfed", supplemental: "Some irrigation", full: "Full irrigation" };
-const RISK_ICON = { low: "●", medium: "▲", high: "■" };
-const RISK_COLOR = { low: C.good, medium: C.warning, high: C.critical };
+const IRRIGATION = ["rainfed", "supplemental", "full"];
 
 function md(mmdd, offsetDays) {
   const [m, d] = mmdd.split("-").map(Number);
   const dt = new Date(Date.UTC(2001, m - 1, d + offsetDays));
   return `${String(dt.getUTCMonth() + 1).padStart(2, "0")}-${String(dt.getUTCDate()).padStart(2, "0")}`;
 }
-const label = (mmdd) => new Date(`2001-${mmdd}T00:00:00Z`).toLocaleDateString("en-IN", { day: "numeric", month: "short", timeZone: "UTC" });
+const dayLabel = (mmdd, lang) => fmtDate(`2001-${mmdd}T00:00:00Z`, lang, { day: "numeric", month: "short", timeZone: "UTC" });
 
 export default function WhatIfPage() {
   return <NeedField><WhatIf /></NeedField>;
 }
 
 function WhatIf() {
-  const { fieldId, field, lang } = useApp();
+  const { fieldId, lang } = useApp();
   const [varieties, setVarieties] = useState(null);
-  const [key, setKey] = useState(null);                 // "crop|season|variety"
+  const [key, setKey] = useState(null);
   const [offset, setOffset] = useState(0);
   const [n, setN] = useState(120);
   const [irrigation, setIrrigation] = useState("rainfed");
@@ -65,37 +63,38 @@ function WhatIf() {
 
   if (!varieties) return <Page><ErrorBox error={error} /><Loading /></Page>;
   const windowDays = v ? Math.round((new Date(`2001-${v.sowing_window_end}`) - new Date(`2001-${v.sowing_window_start}`)) / 864e5 + 365) % 365 : 60;
+  const r = result;
 
   return (
-    <Page title={t("whatIf", lang)} wide>
+    <Page title={t("wi.title", lang)} wide>
       <div className="grid gap-4 lg:grid-cols-[22rem_1fr]">
-        <Card title="Your plan">
+        <Card title={t("wi.plan", lang)}>
           <div className="space-y-4 text-sm">
-            <label className="block">{t("crop", lang)} & variety
+            <label className="block">{t("wi.cropVariety", lang)}
               <select className="mt-1 w-full rounded border border-black/15 px-2 py-1" value={key || ""}
                       onChange={(e) => { setKey(e.target.value); setOffset(0); const nv = varieties.find((x) => `${x.crop}|${x.season}|${x.variety}` === e.target.value); setN(nv?.recommended_n_kg_ha || 0); }}>
                 {varieties.map((x) => {
                   const k = `${x.crop}|${x.season}|${x.variety}`;
-                  return <option key={k} value={k}>{x.crop} · {x.variety} ({x.season})</option>;
+                  return <option key={k} value={k}>{cropName(x.crop, lang)} · {x.variety} ({t(x.season, lang)})</option>;
                 })}
               </select>
             </label>
-            <label className="block">{t("sowing", lang)}: <b>{sowing && label(sowing)}</b>
+            <label className="block">{t("sowing", lang)}: <b>{sowing && dayLabel(sowing, lang)}</b>
               <input type="range" className="mt-1 w-full accent-[var(--series-1)]" min={-30} max={windowDays + 30} step={1}
                      value={offset} onChange={(e) => setOffset(Number(e.target.value))} />
-              <span className="text-xs text-[var(--text-muted)]">Recommended window: {v && `${label(v.sowing_window_start)} – ${label(v.sowing_window_end)}`}</span>
+              <span className="text-xs text-[var(--text-muted)]">{v && t("wi.window", lang, { from: dayLabel(v.sowing_window_start, lang), to: dayLabel(v.sowing_window_end, lang) })}</span>
             </label>
-            <label className="block">Nitrogen: <b className="tabular">{n} kg/ha</b> <span className="text-[var(--text-muted)]">(≈ {Math.round(n / 0.46 / 45 * 10) / 10} bags urea/ha)</span>
+            <label className="block">{t("wi.nitrogen", lang)}: <b className="tabular">{n} kg/ha</b> <span className="text-[var(--text-muted)]">({t("wi.bags", lang, { n: Math.round(n / 0.46 / 45 * 10) / 10 })})</span>
               <input type="range" className="mt-1 w-full accent-[var(--series-1)]" min={0} max={300} step={5}
                      value={n} onChange={(e) => setN(Number(e.target.value))} />
-              <span className="text-xs text-[var(--text-muted)]">Recommended: {v?.recommended_n_kg_ha} kg/ha</span>
+              <span className="text-xs text-[var(--text-muted)]">{t("wi.recommended", lang, { n: v?.recommended_n_kg_ha })}</span>
             </label>
             <fieldset>
-              <legend>Irrigation</legend>
+              <legend>{t("map.irrigation", lang)}</legend>
               <div className="mt-1 flex flex-wrap gap-1">
-                {Object.entries(IRRIGATION).map(([k, lab]) => (
+                {IRRIGATION.map((k) => (
                   <button key={k} onClick={() => setIrrigation(k)}
-                          className={`rounded border px-2 py-1 ${irrigation === k ? "border-[var(--brand)] bg-[var(--brand)] text-white" : "border-black/15"}`}>{lab}</button>
+                          className={`rounded border px-2 py-1 ${irrigation === k ? "border-[var(--brand)] bg-[var(--brand)] text-white" : "border-black/15"}`}>{t(`irr.${k}`, lang)}</button>
                 ))}
               </div>
             </fieldset>
@@ -104,33 +103,33 @@ function WhatIf() {
 
         <div className="space-y-4">
           <ErrorBox error={error} />
-          {!result ? (busy ? <Loading /> : null) : (
+          {!r ? (busy ? <Loading /> : null) : (
             <>
-              <div className={`grid grid-cols-1 gap-3 sm:grid-cols-3 transition-opacity ${busy ? "opacity-60" : ""}`}>
-                <StatTile label={t("yieldRange", lang)} value={`${result.yield_t_ha.low.toFixed(1)}–${result.yield_t_ha.high.toFixed(1)}`}
-                          sub={`t/ha · middle ${result.yield_t_ha.mid.toFixed(1)}`} />
+              <div className={`grid grid-cols-1 gap-3 transition-opacity sm:grid-cols-3 ${busy ? "opacity-60" : ""}`}>
+                <StatTile label={t("yieldRange", lang)} value={`${r.yield_t_ha.low.toFixed(1)}–${r.yield_t_ha.high.toFixed(1)}`}
+                          sub={t("wi.middle", lang, { n: r.yield_t_ha.mid.toFixed(1) })} />
                 <StatTile label={t("risk", lang)}
-                          value={<span className="capitalize"><span style={{ color: RISK_COLOR[result.risk.level] }} aria-hidden>{RISK_ICON[result.risk.level]} </span>{result.risk.level}</span>}
-                          sub={`Past years: ${Math.round(result.risk.share_of_years_low_yield * 100)}% low yield · ${Math.round(result.risk.share_of_years_long_dry_spell * 100)}% long dry spell · ${Math.round(result.risk.share_of_years_heavy_rain_near_harvest * 100)}% heavy rain before harvest`} />
-                <StatTile label={`${t("profit", lang)} / ha`} value={rs(result.profit.mid_rs_ha)}
-                          sub={result.profit.mid_rs_ha != null ? `${rs(result.profit.low_rs_ha)} to ${rs(result.profit.high_rs_ha)}${result.profit.mid_rs_field != null ? ` · whole field ${rs(result.profit.mid_rs_field)}` : ""}` : result.profit.price.source} />
+                          value={<span><LevelIcon level={r.risk.level} /> {t(r.risk.level, lang)}</span>}
+                          sub={t("wi.riskSub", lang, { a: Math.round(r.risk.share_of_years_low_yield * 100), b: Math.round(r.risk.share_of_years_long_dry_spell * 100), c: Math.round(r.risk.share_of_years_heavy_rain_near_harvest * 100) })} />
+                <StatTile label={`${t("profit", lang)} (${t("perHa", lang)})`} value={rs(r.profit.mid_rs_ha)}
+                          sub={r.profit.mid_rs_ha != null ? t("wi.profitSub", lang, { low: rs(r.profit.low_rs_ha), high: rs(r.profit.high_rs_ha), field: rs(r.profit.mid_rs_field) }) : r.profit.price.source} />
               </div>
-              <Card title={`If you had grown this in each past year (${field?.name || "this field"})`}>
+              <Card title={t("wi.eachYear", lang)}>
                 <ResponsiveContainer width="100%" height={180}>
-                  <BarChart data={result.per_year} margin={{ top: 4, right: 8, bottom: 0, left: -18 }}>
+                  <BarChart data={r.per_year} margin={{ top: 4, right: 8, bottom: 0, left: -18 }}>
                     <CartesianGrid stroke={C.grid} vertical={false} />
                     <XAxis dataKey="year" {...axisProps} />
                     <YAxis {...axisProps} unit=" t" />
                     <Bar dataKey="yield_mid_t_ha" fill={C.series1} radius={[4, 4, 0, 0]} maxBarSize={36} isAnimationActive={false} />
-                    <Tooltip cursor={{ fill: C.band }} formatter={(val) => [`${val.toFixed(2)} t/ha (middle estimate)`, "Yield"]} />
+                    <Tooltip cursor={{ fill: C.band }} formatter={(val) => [`${val.toFixed(2)} ${t("tHa", lang)}`, t("yieldRange", lang)]} />
                   </BarChart>
                 </ResponsiveContainer>
-                <p className="text-xs text-[var(--text-muted)]">Each bar replays that year's real weather on this field.</p>
+                <p className="text-xs text-[var(--text-muted)]">{t("wi.eachYearNote", lang)}</p>
               </Card>
-              <Card title="How this was worked out">
+              <Card title={t("wi.how", lang)}>
                 <ul className="list-disc space-y-1 pl-5 text-sm text-[var(--text-secondary)]">
-                  {result.assumptions.map((a, i) => <li key={i}>{a}</li>)}
-                  <li>Price: ₹{result.profit.price.rs_per_qtl?.toLocaleString("en-IN") ?? "—"}/quintal ({result.profit.price.source}). Costs ₹{result.profit.cost_rs_ha.toLocaleString("en-IN")}/ha: {result.profit.cost_note}</li>
+                  <li>{t("wi.price", lang, { p: r.profit.price.rs_per_qtl?.toLocaleString("en-IN") ?? "—", src: r.profit.price.source, c: r.profit.cost_rs_ha.toLocaleString("en-IN") })}</li>
+                  {r.assumptions.map((a, i) => <li key={i} lang="en">{a}</li>)}
                 </ul>
               </Card>
             </>

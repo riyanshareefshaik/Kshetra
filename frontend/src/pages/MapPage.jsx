@@ -4,6 +4,7 @@ import "@geoman-io/leaflet-geoman-free";
 import { api } from "../api.js";
 import { ErrorBox } from "../components/ui.jsx";
 import { useApp } from "../state.jsx";
+import { t } from "../i18n.js";
 
 const CENTER = [16.5, 80.65];   // Krishna district, Andhra Pradesh
 const IRRIGATION = ["rainfed", "canal", "borewell", "tank", "drip", "sprinkler", "unknown"];
@@ -40,7 +41,7 @@ function FlyTo({ field }) {
 }
 
 export default function MapPage() {
-  const { fields, field, selectField, reloadFields } = useApp();
+  const { fields, field, selectField, reloadFields, lang } = useApp();
   const [draft, setDraft] = useState(null);      // { geometry, boundary_source, note }
   const [form, setForm] = useState({ name: "", irrigation_type: "unknown", district: "", state: "Andhra Pradesh" });
   const [busy, setBusy] = useState(false);
@@ -103,43 +104,43 @@ export default function MapPage() {
         <ErrorBox error={error} />
         {draft ? (
           <div className="space-y-3">
-            <h2 className="font-semibold">New field</h2>
-            {draft.note && <p className="text-[var(--text-secondary)]">{draft.note}</p>}
-            <label className="block">Name
+            <h2 className="font-semibold">{t("map.new", lang)}</h2>
+            {draft.boundary_source === "pin_buffer" && <p className="text-[var(--text-secondary)]">{t("bnd.pin", lang)}</p>}
+            <label className="block">{t("map.name", lang)}
               <input className="mt-1 w-full rounded border border-black/15 px-2 py-1" value={form.name}
-                     onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="e.g. Canal-side plot" />
+                     onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder={t("map.namePh", lang)} />
             </label>
-            <label className="block">Irrigation
+            <label className="block">{t("map.irrigation", lang)}
               <select className="mt-1 w-full rounded border border-black/15 px-2 py-1" value={form.irrigation_type}
                       onChange={(e) => setForm({ ...form, irrigation_type: e.target.value })}>
-                {IRRIGATION.map((i) => <option key={i}>{i}</option>)}
+                {IRRIGATION.map((i) => <option key={i} value={i}>{t(`irr.${i}`, lang)}</option>)}
               </select>
             </label>
             <div className="grid grid-cols-2 gap-2">
-              <label className="block">District
+              <label className="block">{t("map.district", lang)}
                 <input className="mt-1 w-full rounded border border-black/15 px-2 py-1" value={form.district}
                        onChange={(e) => setForm({ ...form, district: e.target.value })} placeholder="Krishna" />
               </label>
-              <label className="block">State
+              <label className="block">{t("map.state", lang)}
                 <input className="mt-1 w-full rounded border border-black/15 px-2 py-1" value={form.state}
                        onChange={(e) => setForm({ ...form, state: e.target.value })} />
               </label>
             </div>
-            <p className="text-xs text-[var(--text-muted)]">District name links the field to district yields and prices.</p>
+            <p className="text-xs text-[var(--text-muted)]">{t("map.districtHelp", lang)}</p>
             <div className="flex gap-2">
               <button disabled={busy} onClick={save} className="rounded bg-[var(--brand)] px-3 py-1.5 text-white disabled:opacity-50">
-                Save & build history
+                {t("map.saveBuild", lang)}
               </button>
-              <button onClick={() => setDraft(null)} className="rounded border border-black/15 px-3 py-1.5">Cancel</button>
+              <button onClick={() => setDraft(null)} className="rounded border border-black/15 px-3 py-1.5">{t("cancel", lang)}</button>
             </div>
           </div>
         ) : field ? (
-          <FieldPanel field={field} onChanged={reloadFields} onDeleted={() => { selectField(null); reloadFields(); }} />
+          <FieldPanel field={field} lang={lang} onChanged={reloadFields} onDeleted={() => { selectField(null); reloadFields(); }} />
         ) : (
           <div className="space-y-2">
-            <h2 className="font-semibold">Select a field</h2>
-            <p className="text-[var(--text-secondary)]">Click a field on the map, or use the tools on the left: draw the boundary, or drop a pin and Kshetra proposes one from satellite images.</p>
-            {busy && <p>Finding the field boundary…</p>}
+            <h2 className="font-semibold">{t("map.select", lang)}</h2>
+            <p className="text-[var(--text-secondary)]">{t("map.help", lang)}</p>
+            {busy && <p>{t("map.finding", lang)}</p>}
           </div>
         )}
       </aside>
@@ -147,44 +148,40 @@ export default function MapPage() {
   );
 }
 
-function FieldPanel({ field, onChanged, onDeleted }) {
+function FieldPanel({ field, lang, onChanged, onDeleted }) {
   const [detail, setDetail] = useState(null);
   const [error, setError] = useState(null);
   useEffect(() => {
     api.field(field.id).then(setDetail).catch(setError);
   }, [field.id, field.ingest_status]);
   const f = detail || field;
-  const status = {
-    pending: "Getting ready…", running: "Building your field's history from satellite and weather data (a few minutes)…",
-    done: "History ready", failed: "Could not build the history yet",
-  }[f.ingest_status] || f.ingest_status;
-  const BOUNDARY = { drawn: "drawn by you", auto_ndvi: "found from satellite images", auto_sam: "found from satellite images",
-                     pin_buffer: "approximate square around your pin — redraw it for better results" };
+  const status = t(`status.${f.ingest_status}`, lang);
+  const BOUNDARY = { drawn: "bnd.drawn", auto_ndvi: "bnd.auto", auto_sam: "bnd.auto", pin_buffer: "bnd.pin" };
 
   return (
     <div className="space-y-3">
-      <h2 className="font-semibold">{f.name || "Field"}</h2>
+      <h2 className="font-semibold">{f.name || t("map.select", lang)}</h2>
       <ErrorBox error={error} />
       <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1">
-        <dt className="text-[var(--text-secondary)]">Area</dt><dd>{f.area_ha?.toFixed(2)} ha ({(f.area_ha * 2.471).toFixed(2)} acres)</dd>
-        <dt className="text-[var(--text-secondary)]">District</dt><dd>{f.district || "—"}</dd>
-        {detail && <><dt className="text-[var(--text-secondary)]">Soil</dt><dd>{detail.soil_texture ? `${detail.soil_texture}, clay ${detail.clay_pct}%, pH ${detail.ph_h2o}` : "—"}</dd></>}
-        {detail && <><dt className="text-[var(--text-secondary)]">Irrigation</dt><dd>{detail.irrigation_type || "—"}</dd></>}
-        {detail && <><dt className="text-[var(--text-secondary)]">Boundary</dt><dd>{BOUNDARY[detail.boundary_source] || detail.boundary_source}</dd></>}
-        <dt className="text-[var(--text-secondary)]">Status</dt><dd>{status}</dd>
+        <dt className="text-[var(--text-secondary)]">{t("map.area", lang)}</dt><dd>{f.area_ha?.toFixed(2)} ha ({(f.area_ha * 2.471).toFixed(2)} {t("map.acres", lang)})</dd>
+        <dt className="text-[var(--text-secondary)]">{t("map.district", lang)}</dt><dd>{f.district || "—"}</dd>
+        {detail && <><dt className="text-[var(--text-secondary)]">{t("map.soil", lang)}</dt><dd>{detail.soil_texture ? `${detail.soil_texture}, clay ${detail.clay_pct}%, pH ${detail.ph_h2o}` : "—"}</dd></>}
+        {detail && <><dt className="text-[var(--text-secondary)]">{t("map.irrigation", lang)}</dt><dd>{detail.irrigation_type ? t(`irr.${detail.irrigation_type}`, lang) : "—"}</dd></>}
+        {detail && <><dt className="text-[var(--text-secondary)]">{t("map.boundary", lang)}</dt><dd>{t(BOUNDARY[detail.boundary_source] || "bnd.drawn", lang)}</dd></>}
+        <dt className="text-[var(--text-secondary)]">{t("map.status", lang)}</dt><dd>{status}</dd>
       </dl>
       {f.ingest_status === "failed" && (
-        <p className="rounded bg-amber-50 p-2 text-xs text-amber-900">Satellite or weather data could not be reached. Check the internet connection and press Refresh data.</p>
+        <p className="rounded bg-amber-50 p-2 text-xs text-amber-900">{t("map.failedMsg", lang)}</p>
       )}
       {f.ingest_status === "done" && detail?.ingest_error && (
-        <p className="rounded bg-amber-50 p-2 text-xs text-amber-900">Some data sources were unavailable, so parts of the history may have gaps.</p>
+        <p className="rounded bg-amber-50 p-2 text-xs text-amber-900">{t("map.gapsMsg", lang)}</p>
       )}
       <div className="flex flex-wrap gap-2">
         <button className="rounded border border-black/15 px-3 py-1.5"
-                onClick={async () => { await api.refreshField(f.id); onChanged(); }}>Refresh data</button>
+                onClick={async () => { await api.refreshField(f.id); onChanged(); }}>{t("map.refresh", lang)}</button>
         <button className="rounded border border-red-300 px-3 py-1.5 text-red-800"
-                onClick={async () => { if (confirm("Delete this field and its history?")) { await api.deleteField(f.id); onDeleted(); } }}>
-          Delete
+                onClick={async () => { if (confirm(t("map.deleteConfirm", lang))) { await api.deleteField(f.id); onDeleted(); } }}>
+          {t("delete", lang)}
         </button>
       </div>
     </div>

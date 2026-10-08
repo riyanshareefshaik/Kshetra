@@ -1,5 +1,5 @@
 import { useApp } from "../state.jsx";
-import { t } from "../i18n.js";
+import { cropName, t } from "../i18n.js";
 import { C } from "./tokens.jsx";
 
 export function Card({ title, children, className = "", actions }) {
@@ -52,13 +52,7 @@ export function ErrorBox({ error }) {
 export function NeedField({ children }) {
   const { fieldId, lang } = useApp();
   if (!fieldId) {
-    return (
-      <Page>
-        <Card>
-          <p className="text-[var(--text-secondary)]">{t("noField", lang)}</p>
-        </Card>
-      </Page>
-    );
+    return <Page><Card><p className="text-[var(--text-secondary)]">{t("noField", lang)}</p></Card></Page>;
   }
   return children;
 }
@@ -70,68 +64,88 @@ export function CropBadge({ season }) {
   const uncertain = season.crop_status === "uncertain";
   return (
     <span className="inline-flex items-center gap-1">
-      <span className="font-medium capitalize">{season.crop}</span>
+      <span className="font-medium">{cropName(season.crop, lang)}</span>
       {season.crop_confirmed_by_farmer ? (
-        <span className="rounded bg-green-50 px-1 text-[11px] text-green-800">✓ farmer</span>
-      ) : (
-        pct != null && (
-          <span className={`rounded px-1 text-[11px] ${uncertain ? "bg-amber-50 text-amber-900" : "bg-green-50 text-green-800"}`}>
-            {pct}%{uncertain ? ` · ${t("uncertain", lang)}` : ""}
-          </span>
-        )
+        <span className="rounded bg-green-50 px-1 text-[11px] text-green-800">✓ {t("confirmedByFarmer", lang)}</span>
+      ) : pct != null && (
+        <span className={`rounded px-1 text-[11px] ${uncertain ? "bg-amber-50 text-amber-900" : "bg-green-50 text-green-800"}`}>
+          {pct}%{uncertain ? ` · ${t("uncertain", lang)}` : ""}
+        </span>
       )}
     </span>
   );
 }
 
 const EVENT_STYLE = {
-  dry_spell: { icon: "☀", label: "Dry spell", color: C.serious },
-  waterlogging: { icon: "≋", label: "Waterlogging", color: C.warning },
-  flood: { icon: "≋", label: "Flood", color: C.critical },
-  heat_stress: { icon: "▲", label: "Heat stress", color: C.serious },
-  sudden_damage: { icon: "✕", label: "Sudden damage", color: C.critical },
+  dry_spell: { icon: "☀", color: C.serious },
+  waterlogging: { icon: "≋", color: C.warning },
+  flood: { icon: "≋", color: C.critical },
+  heat_stress: { icon: "▲", color: C.serious },
+  sudden_damage: { icon: "✕", color: C.critical },
 };
 
 export function eventStyle(type) {
-  return EVENT_STYLE[type] || { icon: "•", label: type.replace(/_/g, " "), color: C.muted };
+  return EVENT_STYLE[type] || { icon: "•", color: C.muted };
 }
 
 export function EventTag({ event }) {
+  const { lang } = useApp();
   const s = eventStyle(event.event_type);
   return (
     <span className="inline-flex items-center gap-1 text-sm">
       <span aria-hidden style={{ color: s.color }}>{s.icon}</span>
-      <span>{s.label}</span>
+      <span>{t(`ev.${event.event_type}`, lang)}</span>
     </span>
   );
 }
 
-/** Low–mid–high on a shared scale: a thin range with a mid tick. */
-export function RangeBar({ low, mid, high, max, unit = "t/ha" }) {
+const LEVEL = {
+  critical: { icon: "■", color: C.critical }, high: { icon: "■", color: C.critical },
+  warning: { icon: "▲", color: C.warning }, medium: { icon: "▲", color: C.warning },
+  info: { icon: "●", color: C.series1 }, low: { icon: "●", color: C.good },
+};
+
+/** Status shape + colour; always shown next to a text label. */
+export function LevelIcon({ level }) {
+  const l = LEVEL[level] || LEVEL.info;
+  return <span aria-hidden style={{ color: l.color }}>{l.icon}</span>;
+}
+
+export function RangeBar({ low, mid, high, max }) {
+  const { lang } = useApp();
   if (low == null || high == null) return <span className="text-[var(--text-muted)]">—</span>;
   const pct = (v) => `${Math.max(0, Math.min(100, (v / max) * 100))}%`;
   return (
-    <div className="flex items-center gap-2" title={`${low} – ${high} ${unit} (mid ${mid})`}>
-      <div className="relative h-3 w-32 rounded-full bg-[var(--grid)]">
+    <div className="flex items-center gap-2" title={`${low} – ${high} (${mid})`}>
+      <div className="relative h-3 w-28 rounded-full bg-[var(--grid)]">
         <div className="absolute top-0 h-3 rounded-full bg-[var(--series-1)]/35"
              style={{ left: pct(low), width: `calc(${pct(high)} - ${pct(low)})` }} />
         <div className="absolute top-[-2px] h-4 w-0.5 bg-[var(--series-1)]" style={{ left: pct(mid) }} />
       </div>
-      <span className="tabular text-sm">{low.toFixed(1)}–{high.toFixed(1)} <span className="text-[var(--text-muted)]">{unit}</span></span>
+      <span className="tabular text-sm">{low.toFixed(1)}–{high.toFixed(1)} <span className="text-[var(--text-muted)]">{t("tHa", lang)}</span></span>
     </div>
   );
 }
 
 export function SeasonSelect({ seasons, value, onChange }) {
+  const { lang } = useApp();
   return (
     <select className="rounded border border-black/15 bg-white px-2 py-1 text-sm" value={value || ""}
             onChange={(e) => onChange(e.target.value)}>
       {seasons.map((s) => (
         <option key={s.id} value={s.id}>
-          {s.season} {s.year} · {s.crop || "?"}{s.in_progress ? " (now)" : ""}
+          {t(s.season, lang)} {s.year} · {cropName(s.crop, lang)}{s.in_progress ? ` (${t("inField", lang)})` : ""}
         </option>
       ))}
     </select>
+  );
+}
+
+export function ListenButton({ text }) {
+  const { lang } = useApp();
+  return (
+    <button onClick={() => import("./speech.js").then((m) => m.speak(text, lang)).catch(() => {})}
+            className="rounded border border-black/10 px-2 py-0.5 text-xs">🔊 {t("listen", lang)}</button>
   );
 }
 
