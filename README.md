@@ -12,7 +12,7 @@ it uses is free and open source. See [docs/PRD.md](docs/PRD.md) and
 | Stage | Status |
 |---|---|
 | 1. Repo scaffold | ✅ |
-| 2. Database schema (4 memory layers) | ⏳ |
+| 2. Database schema (4 memory layers) | ✅ |
 | 3. Earth Engine + NISAR + weather + soil pipeline | ⏳ |
 | 4. ML models | ⏳ |
 | 5. Backend APIs | ⏳ |
