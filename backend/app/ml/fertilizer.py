@@ -66,15 +66,19 @@ def calculate(crop: str, rdf: tuple[float, float, float], soil: dict | None, are
 
     notes = []
     if not soil:
-        notes.append("No soil test yet: this is the standard dose. A free Soil Health Card test makes it fit your soil.")
+        notes.append({"code": "no_soil_test",
+                      "text": "No soil test yet: this is the standard dose. A free Soil Health Card test makes it fit your soil."})
     zn = soil.get("zn_ppm")
     if zn is not None and zn < ZN_LOW_PPM:
-        notes.append(f"Zinc is low ({zn} ppm): apply 25 kg zinc sulphate per hectare at sowing/transplanting.")
+        notes.append({"code": "zinc_low", "value": zn,
+                      "text": f"Zinc is low ({zn} ppm): apply 25 kg zinc sulphate per hectare at sowing/transplanting."})
     ph = soil.get("ph")
     if ph is not None and ph > 8.5:
-        notes.append(f"Soil is alkaline (pH {ph}): apply gypsum as advised by your soil lab before sowing.")
+        notes.append({"code": "alkaline", "value": ph,
+                      "text": f"Soil is alkaline (pH {ph}): apply gypsum as advised by your soil lab before sowing."})
     elif ph is not None and ph < 5.5:
-        notes.append(f"Soil is acidic (pH {ph}): apply agricultural lime as advised by your soil lab.")
+        notes.append({"code": "acidic", "value": ph,
+                      "text": f"Soil is acidic (pH {ph}): apply agricultural lime as advised by your soil lab."})
     return {"crop": crop, "area_ha": round(area_ha, 3), "standard_dose": dict(zip(("n_kg_ha", "p2o5_kg_ha", "k2o_kg_ha"), rdf)),
             "ratings": ratings, "dose": dose, "products": items, "total_cost_rs": round(total),
             "schedule": SPLITS.get(crop, []), "notes": notes,

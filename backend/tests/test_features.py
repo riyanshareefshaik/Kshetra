@@ -53,10 +53,10 @@ def test_fertilizer_ratings_and_products():
     assert std["dose"] == {"n_kg_ha": 120, "p2o5_kg_ha": 60, "k2o_kg_ha": 40}
     prods = {p["product"]: p for p in std["products"]}
     assert prods["DAP"]["kg_per_ha"] == 130 and prods["UREA"]["kg_per_ha"] == 210 and prods["MOP"]["kg_per_ha"] == 67
-    assert prods["DAP"]["bags"] == 3.0 and std["notes"][0].startswith("No soil test")
+    assert prods["DAP"]["bags"] == 3.0 and std["notes"][0]["code"] == "no_soil_test"
     adj = calculate("paddy", (120, 60, 40), {"n_kg_ha": 250, "p_kg_ha": 30, "k_kg_ha": 150, "zn_ppm": 0.4, "ph": 8.8}, 2.0)
     assert adj["dose"] == {"n_kg_ha": 150, "p2o5_kg_ha": 45, "k2o_kg_ha": 40}
-    assert any("Zinc" in n for n in adj["notes"]) and any("gypsum" in n for n in adj["notes"])
+    assert {n["code"] for n in adj["notes"]} == {"zinc_low", "alkaline"}
 
 
 def test_soil_card_text_parsing():
@@ -113,7 +113,7 @@ def test_market_trend_mandis_and_seasonality(client, conn, monkeypatch):
     assert len(out["trend"]) >= 50 and out["markets"][0]["market"] == "Tenali"
     assert all(m["distance_km"] is not None for m in out["markets"])
     assert out["reference"]["source"].startswith("Agmarknet")
-    text = " ".join(out["advice"])
+    text = " ".join(a["text"] for a in out["advice"])
     assert "rising" in text and "Best nearby option" in text
     if today.month not in (3, 4):
         assert "usually highest in" in text

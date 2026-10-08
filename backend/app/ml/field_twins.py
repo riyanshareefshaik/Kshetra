@@ -54,22 +54,25 @@ def _diary_inputs(conn, season_id: str) -> dict:
     return {r["activity_type"]: r["n"] for r in rows}
 
 
-def differences(conn, me: dict, twin: dict) -> list[str]:
+def differences(conn, me: dict, twin: dict) -> list[dict]:
+    """What the twin did differently, as {code, values..., text} (the app words it per language)."""
     out = []
     if me["sowing_date"] and twin["sowing_date"]:
-        a = me["sowing_date"].timetuple().tm_yday
-        b = twin["sowing_date"].timetuple().tm_yday
-        gap = b - a
+        gap = twin["sowing_date"].timetuple().tm_yday - me["sowing_date"].timetuple().tm_yday
         if abs(gap) >= 7:
-            out.append(f"Sowed {abs(gap)} days {'later' if gap > 0 else 'earlier'} than you.")
+            code = "sowed_later" if gap > 0 else "sowed_earlier"
+            out.append({"code": code, "days": abs(gap),
+                        "text": f"Sowed {abs(gap)} days {'later' if gap > 0 else 'earlier'} than you."})
     if twin["variety"] and twin["variety"] != me["variety"]:
-        out.append(f"Grew variety {twin['variety']}.")
+        out.append({"code": "variety", "variety": twin["variety"], "text": f"Grew variety {twin['variety']}."})
     if twin["irrigation_type"] and twin["irrigation_type"] != me["irrigation_type"]:
-        out.append(f"Irrigation: {twin['irrigation_type']}.")
+        out.append({"code": "irrigation", "irrigation": twin["irrigation_type"],
+                    "text": f"Irrigation: {twin['irrigation_type']}."})
     mine, theirs = _diary_inputs(conn, me["id"]), _diary_inputs(conn, twin["season_id"])
     for act in ("fertilizer", "irrigation", "pesticide", "weeding"):
         if theirs.get(act, 0) != mine.get(act, 0) and (theirs.get(act) or mine.get(act)):
-            out.append(f"Recorded {theirs.get(act, 0)} {act} entries (you: {mine.get(act, 0)}).")
+            out.append({"code": "diary", "activity": act, "theirs": theirs.get(act, 0), "mine": mine.get(act, 0),
+                        "text": f"Recorded {theirs.get(act, 0)} {act} entries (you: {mine.get(act, 0)})."})
     if twin["stress_events"] == 0:
-        out.append("No stress events detected in their season.")
+        out.append({"code": "no_stress", "text": "No stress events detected in their season."})
     return out

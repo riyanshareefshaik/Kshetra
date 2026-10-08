@@ -91,22 +91,27 @@ def market_view(conn, crop: str, field: dict, today: date | None = None, locate=
         prev = sum(r["price"] for r in trend[-8:-4]) / 4
         change = 100 * (last - prev) / prev if prev else 0
         word = "rising" if change > 3 else "falling" if change < -3 else "steady"
-        out["advice"].append(f"Prices are {word}: {change:+.0f}% over the last 4 weeks.")
+        out["advice"].append({"code": "trend", "word": word, "change_pct": round(change),
+                              "text": f"Prices are {word}: {change:+.0f}% over the last 4 weeks."})
     if len(by_month) >= 10 and min(r["years"] for r in by_month) >= 1:
         best = max(by_month, key=lambda r: r["price"])
         now = next((r for r in by_month if r["m"] == today.month), None)
         out["seasonality"] = [{"month": MONTHS[r["m"] - 1], "price": round(float(r["price"]))} for r in by_month]
         if now and best["m"] != today.month and best["price"] > now["price"] * 1.05:
             gain = 100 * (best["price"] - now["price"]) / now["price"]
-            out["advice"].append(f"Prices are usually highest in {MONTHS[best['m'] - 1]} (about {gain:.0f}% above "
-                                 f"{MONTHS[today.month - 1]}). If you can store the crop safely, waiting may pay; "
-                                 "past patterns are not a guarantee.")
+            out["advice"].append({"code": "seasonal", "best_month": best["m"], "this_month": today.month,
+                                  "gain_pct": round(gain),
+                                  "text": f"Prices are usually highest in {MONTHS[best['m'] - 1]} (about {gain:.0f}% above "
+                                          f"{MONTHS[today.month - 1]}). If you can store the crop safely, waiting may pay; "
+                                          "past patterns are not a guarantee."})
     near = [m for m in markets if m["distance_km"] is not None]
     if near:
         # Best price after a rough transport cost of Rs 2 per quintal per km.
         best = max(near, key=lambda m: m["modal_price"] - 2 * m["distance_km"])
-        out["advice"].append(f"Best nearby option: {best['market']} ({best['distance_km']} km), "
-                             f"Rs {best['modal_price']:.0f}/quintal on {best['arrival_date']}.")
+        out["advice"].append({"code": "best_market", "market": best["market"], "km": best["distance_km"],
+                              "price": round(best["modal_price"]), "date": best["arrival_date"],
+                              "text": f"Best nearby option: {best['market']} ({best['distance_km']} km), "
+                                      f"Rs {best['modal_price']:.0f}/quintal on {best['arrival_date']}."})
     if not markets:
-        out["advice"].append("No recent mandi prices stored for this crop in your state yet.")
+        out["advice"].append({"code": "no_data", "text": "No recent mandi prices stored for this crop in your state yet."})
     return out
