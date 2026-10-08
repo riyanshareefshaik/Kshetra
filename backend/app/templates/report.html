@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Kshetra Field Health Report</title>
+<style>
+  @page { size: A4; margin: 16mm 14mm 18mm; @bottom-center { content: "Kshetra field health report · page " counter(page) " of " counter(pages); font-size: 8pt; color: #777; } }
+  body { font-family: "Noto Sans", "Noto Sans Telugu", "Noto Sans Devanagari", sans-serif; font-size: 9.5pt; color: #1c1c1c; }
+  h1 { font-size: 17pt; margin: 0; color: #1b5e20; }
+  h2 { font-size: 11.5pt; margin: 16px 0 6px; color: #1b5e20; border-bottom: 1px solid #c8e6c9; padding-bottom: 2px; }
+  .sub { color: #555; margin-top: 2px; }
+  table { border-collapse: collapse; width: 100%; }
+  th, td { text-align: left; padding: 3px 5px; border-bottom: 1px solid #e3e3e3; vertical-align: top; }
+  th { background: #f1f8f1; font-weight: 600; font-size: 8.5pt; }
+  .kv td:first-child { color: #555; width: 34%; }
+  .grid { display: flex; gap: 14px; }
+  .muted { color: #666; font-size: 8.5pt; }
+  .tag { display: inline-block; padding: 0 4px; border-radius: 3px; font-size: 8pt; }
+  .uncertain { background: #fff3e0; color: #8a4b00; }
+  .confident { background: #e8f5e9; color: #1b5e20; }
+  .synthetic { border: 2px solid #c62828; color: #c62828; padding: 6px 8px; font-weight: 700; margin: 8px 0; }
+  .digest { font-family: monospace; font-size: 7.5pt; word-break: break-all; }
+</style>
+</head>
+<body>
+  <h1>Field Health Report</h1>
+  <div class="sub">{{ field.name or "Field" }} · {{ field.district or "" }}{% if field.state %}, {{ field.state }}{% endif %} · generated {{ generated }}</div>
+  {% if field.is_synthetic %}<div class="synthetic">SYNTHETIC TEST DATA — not a real field. Do not use for loans or insurance.</div>{% endif %}
+
+  <h2>Field</h2>
+  <div class="grid">
+    <table class="kv">
+      <tr><td>Area</td><td>{{ "%.2f"|format(field.area_ha|float) }} ha ({{ "%.2f"|format(field.area_ha|float * 2.471) }} acres)</td></tr>
+      <tr><td>Centre (lat, lon)</td><td>{{ "%.5f"|format(field.lat) }}, {{ "%.5f"|format(field.lon) }}</td></tr>
+      <tr><td>Boundary</td><td>{{ {"drawn": "drawn by farmer", "auto_ndvi": "from satellite segmentation", "auto_sam": "from satellite segmentation", "pin_buffer": "approximate square around a pin"}[field.boundary_source] }}</td></tr>
+      <tr><td>Irrigation</td><td>{{ field.irrigation_type or "not recorded" }}</td></tr>
+      <tr><td>Soil (0–30 cm)</td><td>{% if field.soil_texture %}{{ field.soil_texture }}; clay {{ field.clay_pct }}%, pH {{ field.ph_h2o }}, organic carbon {{ field.soc_g_per_kg }} g/kg{% else %}not available{% endif %}</td></tr>
+      <tr><td>Records</td><td>{% if period.a %}{{ period.a.strftime("%d %b %Y") }} to {{ period.b.strftime("%d %b %Y") }}{% else %}none{% endif %}</td></tr>
+    </table>
+    <div>{{ boundary_svg|safe }}</div>
+  </div>
+
+  <h2>Crop greenness from space (NDVI), last {{ 4 }} years</h2>
+  {% if ndvi_svg %}{{ ndvi_svg|safe }}
+  <div class="muted">Line: smoothed NDVI. Dark dots: clear Sentinel-2 observations. Purple dots: cloudy days estimated from radar (Sentinel-1 / NISAR). Shaded: detected crop seasons.</div>
+  {% else %}<p class="muted">No satellite record yet.</p>{% endif %}
+
+  <h2>Season history</h2>
+  {% if seasons %}
+  <table>
+    <tr><th>Season</th><th>Crop</th><th>Sowing</th><th>Harvest</th><th>Yield estimate (t/ha)</th></tr>
+    {% for s in seasons %}
+    <tr>
+      <td>{{ s.season|capitalize }} {{ s.year }}</td>
+      <td>{{ s.crop or "unknown" }}{% if s.variety %} ({{ s.variety }}){% endif %}
+        {% if s.crop_confirmed_by_farmer %}<span class="tag confident">confirmed by farmer</span>
+        {% elif s.crop_confidence is not none %}<span class="tag {{ s.crop_status }}">{{ "%.0f"|format(s.crop_confidence * 100) }}%{% if s.crop_status == "uncertain" %} uncertain{% endif %}</span>{% endif %}</td>
+      <td>{{ s.sowing_date.strftime("%d %b %Y") }}{% if s.date_detection in ("sar", "nisar") %} <span class="muted">(radar)</span>{% endif %}</td>
+      <td>{% if s.in_progress %}in field{% elif s.harvest_date %}{{ s.harvest_date.strftime("%d %b %Y") }}{% endif %}</td>
+      <td>{% if s.yield_mid_t_ha is not none %}{{ "%.1f"|format(s.yield_low_t_ha) }} – {{ "%.1f"|format(s.yield_high_t_ha) }}{% if s.yield_is_forecast %} <span class="muted">(forecast)</span>{% endif %}{% else %}<span class="muted">not estimated</span>{% endif %}</td>
+    </tr>
+    {% endfor %}
+  </table>
+  {% else %}<p class="muted">No seasons detected yet.</p>{% endif %}
+
+  <h2>Crop stress and damage events (for PMFBY claims)</h2>
+  {% if events %}
+  <table>
+    <tr><th>Dates</th><th>Event</th><th>Season</th><th>Severity</th><th>Evidence</th></tr>
+    {% for e in events %}
+    <tr>
+      <td>{{ e.start_date.strftime("%d %b %Y") }}{% if e.end_date and e.end_date != e.start_date %} – {{ e.end_date.strftime("%d %b %Y") }}{% endif %}</td>
+      <td>{{ e.event_type.replace("_", " ") }}{% if e.origin != "detected" %} <span class="muted">({{ e.origin }})</span>{% endif %}</td>
+      <td>{% if e.season %}{{ e.season|capitalize }} {{ e.year }} {{ e.crop or "" }}{% endif %}</td>
+      <td>{% if e.severity is not none %}{{ "%.0f"|format(e.severity * 100) }}%{% endif %}</td>
+      <td class="muted">{% for k, v in e.evidence.items() if v is not none %}{{ k.replace("_", " ") }}: {% if v is sameas true %}yes{% elif v is sameas false %}no{% else %}{{ v }}{% endif %}{% if not loop.last %}; {% endif %}{% endfor %}</td>
+    </tr>
+    {% endfor %}
+  </table>
+  {% else %}<p class="muted">No stress events detected.</p>{% endif %}
+
+  {% set latest = seasons|selectattr("shap_reasons")|list|last %}
+  {% if latest %}
+  <h2>Likely reasons for {{ latest.season }} {{ latest.year }} yield</h2>
+  <ul>{% for r in latest.shap_reasons %}<li>{{ r.text }}</li>{% endfor %}</ul>
+  <p class="muted">These are likely reasons found by a statistical model, not proven causes.</p>
+  {% endif %}
+
+  <h2>Data sources and methods</h2>
+  <table class="kv">
+    <tr><td>Optical satellite</td><td>Copernicus Sentinel-2 (10 m), {{ sources.get("s2", 0) }} clear observations</td></tr>
+    <tr><td>Radar satellite</td><td>Copernicus Sentinel-1 ({{ sources.get("s1", 0) }} dates); NASA-ISRO NISAR L-band ({{ sources.get("nisar_l", 0) }}) and S-band ({{ sources.get("nisar_s", 0) }})</td></tr>
+    <tr><td>Weather</td><td>Open-Meteo archive (ERA5) / NASA POWER, {{ sources.get("weather", 0) }} days</td></tr>
+    <tr><td>Soil</td><td>ISRIC SoilGrids 2.0</td></tr>
+    <tr><td>Yields</td><td>Ranges (10th–90th percentile) from a model trained on district statistics, or district history where no model is trained. Not a measured harvest.</td></tr>
+  </table>
+  <p class="muted">Kshetra uses free public satellite and weather data. Estimates can be wrong, especially for small fields, mixed crops, or fields whose boundary was not drawn by the farmer. A field visit should confirm any claim.</p>
+  <p class="muted">Data digest (SHA-256):<br><span class="digest">{{ digest }}</span></p>
+</body>
+</html>
