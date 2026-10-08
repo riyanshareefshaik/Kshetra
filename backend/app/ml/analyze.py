@@ -61,17 +61,21 @@ def district_area_share(conn, state: str | None, district: str | None, season: s
 
 
 def district_yield_history(conn, state, district, crop, season) -> list[float]:
+    """Recent district yields for the crop: this season, else whole-year totals, else any season."""
     if not district:
         return []
     rows = conn.execute(
         """SELECT yield_t_ha, season FROM district_yields
            WHERE lower(district) = lower(%s) AND (%s::text IS NULL OR lower(state) = lower(%s))
-             AND crop = %s AND season IN (%s, 'total') AND yield_t_ha > 0
+             AND crop = %s AND yield_t_ha > 0
            ORDER BY year DESC""",
-        (district, state, state, crop, season),
+        (district, state, state, crop),
     ).fetchall()
-    exact = [float(r["yield_t_ha"]) for r in rows if r["season"] == season]
-    return (exact or [float(r["yield_t_ha"]) for r in rows])[:10]
+    for wanted in (season, "total"):
+        picked = [float(r["yield_t_ha"]) for r in rows if r["season"] == wanted]
+        if picked:
+            return picked[:10]
+    return [float(r["yield_t_ha"]) for r in rows][:10]
 
 
 def analyze_field(conn: psycopg.Connection, field_id: str) -> dict:

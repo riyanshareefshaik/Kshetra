@@ -134,6 +134,19 @@ class YieldModel:
         return cls(b["models"], b["feature_means"], b["metrics"], b["version"])
 
 
+_cache: dict = {}
+
+
+def load_cached_model(path: Path = MODEL_PATH) -> "YieldModel | None":
+    """YieldModel.load, reused until the file changes (keeps the what-if simulator under a second)."""
+    if not path.exists():
+        return None
+    mtime = path.stat().st_mtime
+    if _cache.get("key") != (str(path), mtime):
+        _cache.update(key=(str(path), mtime), model=YieldModel.load(path))
+    return _cache["model"]
+
+
 def baseline_yield(
     district_yields: list[float],
     integral: float | None,

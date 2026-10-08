@@ -58,6 +58,8 @@ CREATE TABLE IF NOT EXISTS fields (
     cec_cmol_per_kg  real,
     bulk_density     real,
     soil_source      text,
+    -- Test/demo fields built from synthetic data are always labelled as such in the UI and PDF.
+    is_synthetic     boolean NOT NULL DEFAULT false,
     ingest_status    text NOT NULL DEFAULT 'pending'
                      CHECK (ingest_status IN ('pending', 'running', 'done', 'failed')),
     ingest_error     text,
@@ -166,12 +168,6 @@ CREATE TABLE IF NOT EXISTS seasons (
     CHECK (yield_mid_t_ha IS NULL OR yield_high_t_ha IS NULL OR yield_mid_t_ha <= yield_high_t_ha),
     CHECK (sowing_date IS NULL OR harvest_date IS NULL OR sowing_date < harvest_date)
 );
-
--- Columns added after the first release, for databases created earlier.
-ALTER TABLE seasons ADD COLUMN IF NOT EXISTS yield_method text CHECK (yield_method IN ('model', 'baseline'));
-ALTER TABLE seasons ADD COLUMN IF NOT EXISTS features jsonb NOT NULL DEFAULT '{}';
-ALTER TABLE seasons ADD COLUMN IF NOT EXISTS in_progress boolean NOT NULL DEFAULT false;
-ALTER TABLE seasons ADD COLUMN IF NOT EXISTS date_confidence real CHECK (date_confidence BETWEEN 0 AND 1);
 
 CREATE INDEX IF NOT EXISTS idx_seasons_field ON seasons (field_id, year DESC);
 CREATE INDEX IF NOT EXISTS idx_seasons_crop  ON seasons (crop, year);
@@ -317,6 +313,7 @@ CREATE TABLE IF NOT EXISTS crop_varieties (
     sowing_window_start   text,      -- 'MM-DD'
     sowing_window_end     text,      -- 'MM-DD'
     water_need            text CHECK (water_need IN ('low', 'medium', 'high')),
+    recommended_n_kg_ha   real,
     seed_cost_rs_per_ha   real,
     other_cost_rs_per_ha  real,
     states                text[] NOT NULL DEFAULT '{}',
@@ -349,3 +346,12 @@ WHERE u.data_sharing_consent
   AND s.crop_status = 'confident'
 GROUP BY f.state, f.district, s.year, s.season, s.crop, s.variety
 HAVING count(DISTINCT f.id) >= 5;
+
+-- ---------------------------------------------------------------------
+-- Upgrades: columns added after the first release, for databases created earlier.
+ALTER TABLE fields ADD COLUMN IF NOT EXISTS is_synthetic boolean NOT NULL DEFAULT false;
+ALTER TABLE crop_varieties ADD COLUMN IF NOT EXISTS recommended_n_kg_ha real;
+ALTER TABLE seasons ADD COLUMN IF NOT EXISTS yield_method text CHECK (yield_method IN ('model', 'baseline'));
+ALTER TABLE seasons ADD COLUMN IF NOT EXISTS features jsonb NOT NULL DEFAULT '{}';
+ALTER TABLE seasons ADD COLUMN IF NOT EXISTS in_progress boolean NOT NULL DEFAULT false;
+ALTER TABLE seasons ADD COLUMN IF NOT EXISTS date_confidence real CHECK (date_confidence BETWEEN 0 AND 1);
