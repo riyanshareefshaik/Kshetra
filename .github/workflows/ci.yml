@@ -7,13 +7,13 @@ jobs:
   backend:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Start PostGIS + pgvector
         run: |
           docker build -t kshetra-db database
           docker run -d --name db -e POSTGRES_USER=kshetra -e POSTGRES_PASSWORD=kshetra -e POSTGRES_DB=kshetra -p 5432:5432 kshetra-db
           for i in $(seq 1 30); do docker exec db pg_isready -U kshetra -d kshetra && break; sleep 2; done
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.11"
           cache: pip
@@ -35,8 +35,8 @@ jobs:
   frontend:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
           node-version: 22
           cache: npm
