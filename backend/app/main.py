@@ -5,7 +5,22 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api import ask, diary, fields, planning, report, seasons, users, voice
+from app.api import (
+    advisory,
+    ask,
+    claims,
+    diary,
+    fertilizer,
+    fields,
+    groups,
+    market,
+    planning,
+    report,
+    schemes,
+    seasons,
+    users,
+    voice,
+)
 from app.config import get_settings
 from app.db.seeds import load_crop_varieties
 from app.db.session import db_ok, get_conn
@@ -39,7 +54,8 @@ app.add_middleware(
     allow_headers=["*"],
     expose_headers=["X-Report-SHA256", "Content-Disposition"],
 )
-for module in (fields, seasons, planning, ask, diary, voice, report, users):
+for module in (fields, seasons, planning, ask, diary, voice, report, users, advisory, fertilizer, market, claims,
+               schemes, groups):
     app.include_router(module.router)
 
 

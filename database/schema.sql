@@ -30,6 +30,9 @@ CREATE TABLE IF NOT EXISTS users (
     -- F13: sharing is OFF until the farmer turns it on.
     data_sharing_consent  boolean NOT NULL DEFAULT false,
     consent_updated_at    timestamptz,
+    -- Login (Supabase Auth user id and email); NULL in local single-user mode.
+    auth_id               text UNIQUE,
+    email                 text,
     created_at            timestamptz NOT NULL DEFAULT now()
 );
 
@@ -312,11 +315,59 @@ CREATE TABLE IF NOT EXISTS crop_varieties (
     sowing_window_end     text,      -- 'MM-DD'
     water_need            text CHECK (water_need IN ('low', 'medium', 'high')),
     recommended_n_kg_ha   real,
+    recommended_p2o5_kg_ha real,
+    recommended_k2o_kg_ha  real,
     seed_cost_rs_per_ha   real,
     other_cost_rs_per_ha  real,
     states                text[] NOT NULL DEFAULT '{}',
     source                text,
     PRIMARY KEY (crop, variety, season)
+);
+
+-- ---------------------------------------------------------------------
+-- Soil tests (Soil Health Card, lab or manual entry) for the fertilizer calculator.
+-- Values as reported: available N, P, K in kg/ha (P and K elemental, as on the card).
+-- ---------------------------------------------------------------------
+
+CREATE TABLE IF NOT EXISTS soil_tests (
+    id          uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    field_id    uuid NOT NULL REFERENCES fields(id) ON DELETE CASCADE,
+    test_date   date NOT NULL DEFAULT current_date,
+    n_kg_ha     real CHECK (n_kg_ha >= 0),
+    p_kg_ha     real CHECK (p_kg_ha >= 0),
+    k_kg_ha     real CHECK (k_kg_ha >= 0),
+    ph          real CHECK (ph BETWEEN 0 AND 14),
+    oc_pct      real CHECK (oc_pct >= 0),
+    ec_ds_m     real CHECK (ec_ds_m >= 0),
+    zn_ppm      real CHECK (zn_ppm >= 0),
+    source      text NOT NULL DEFAULT 'manual' CHECK (source IN ('soil_health_card', 'lab', 'manual')),
+    raw_text    text,
+    created_at  timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS idx_soil_tests_field ON soil_tests (field_id, test_date DESC);
+
+-- ---------------------------------------------------------------------
+-- Farmer groups (FPOs, village groups). Members choose to share their fields with the group.
+-- ---------------------------------------------------------------------
+
+CREATE TABLE IF NOT EXISTS farmer_groups (
+    id          uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    name        text NOT NULL,
+    district    text,
+    state       text,
+    join_code   text NOT NULL UNIQUE,
+    created_by  uuid REFERENCES users(id) ON DELETE SET NULL,
+    created_at  timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS group_members (
+    group_id          uuid NOT NULL REFERENCES farmer_groups(id) ON DELETE CASCADE,
+    user_id           uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    role              text NOT NULL DEFAULT 'member' CHECK (role IN ('admin', 'member')),
+    share_with_group  boolean NOT NULL DEFAULT true,
+    joined_at         timestamptz NOT NULL DEFAULT now(),
+    PRIMARY KEY (group_id, user_id)
 );
 
 -- ---------------------------------------------------------------------
@@ -363,3 +414,7 @@ ALTER TABLE seasons ADD COLUMN IF NOT EXISTS yield_method text CHECK (yield_meth
 ALTER TABLE seasons ADD COLUMN IF NOT EXISTS features jsonb NOT NULL DEFAULT '{}';
 ALTER TABLE seasons ADD COLUMN IF NOT EXISTS in_progress boolean NOT NULL DEFAULT false;
 ALTER TABLE seasons ADD COLUMN IF NOT EXISTS date_confidence real CHECK (date_confidence BETWEEN 0 AND 1);
+ALTER TABLE users ADD COLUMN IF NOT EXISTS auth_id text UNIQUE;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS email text;
+ALTER TABLE crop_varieties ADD COLUMN IF NOT EXISTS recommended_p2o5_kg_ha real;
+ALTER TABLE crop_varieties ADD COLUMN IF NOT EXISTS recommended_k2o_kg_ha real;

@@ -38,3 +38,27 @@ def parse_seed_packet(text: str) -> dict:
     if "germination_pct" in out:
         out["germination_pct"] = int(out["germination_pct"])
     return out
+
+
+# --------------------------------------------------------------- Soil Health Card
+
+NUM = r"[:\-\s]*([0-9]+(?:\.[0-9]+)?)"
+SOIL_LABELS = {
+    "n_kg_ha": r"(?:available\s*)?nitrogen\s*(?:\(N\))?(?:\s*kg/ha)?" + NUM,
+    "p_kg_ha": r"(?:available\s*)?phosph\w*\s*(?:\(P\))?(?:\s*kg/ha)?" + NUM,
+    "k_kg_ha": r"(?:available\s*)?potass\w*\s*(?:\(K\))?(?:\s*kg/ha)?" + NUM,
+    "ph": r"\bpH\b" + NUM,
+    "oc_pct": r"organic\s*carbon\s*(?:\(OC\))?(?:\s*%)?" + NUM,
+    "ec_ds_m": r"\bEC\b(?:\s*\(?dS/m\)?)?" + NUM,
+    "zn_ppm": r"(?:zinc|\bZn\b)\s*(?:\(Zn\))?(?:\s*ppm)?" + NUM,
+}
+
+
+def parse_soil_card(text: str) -> dict:
+    """Values from a Soil Health Card photo (as printed: available N, P, K in kg/ha)."""
+    out = {}
+    for key, pattern in SOIL_LABELS.items():
+        m = re.search(pattern, text, re.IGNORECASE)
+        if m:
+            out[key] = float(m.group(1))
+    return out

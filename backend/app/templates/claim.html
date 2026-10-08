@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>PMFBY claim evidence</title>
+<style>
+  @page { size: A4; margin: 16mm 14mm; }
+  body { font-family: "Noto Sans", "Noto Sans Telugu", "Noto Sans Devanagari", sans-serif; font-size: 10pt; color: #1c1c1c; }
+  h1 { font-size: 16pt; color: #1b5e20; margin: 0; }
+  h2 { font-size: 11.5pt; color: #1b5e20; border-bottom: 1px solid #c8e6c9; margin: 14px 0 6px; }
+  table { border-collapse: collapse; width: 100%; } td { padding: 3px 5px; border-bottom: 1px solid #e3e3e3; vertical-align: top; }
+  td:first-child { color: #555; width: 36%; }
+  .box { border: 1.5px solid #1b5e20; padding: 8px; margin-top: 8px; }
+  .muted { color: #666; font-size: 8.5pt; }
+  .blank { border-bottom: 1px solid #999; display: inline-block; min-width: 60mm; }
+</style>
+</head>
+<body>
+  <h1>Crop loss evidence for PMFBY</h1>
+  <div class="muted">Prepared by Kshetra on {{ generated }} · Helpline {{ helpline }} · Crop Insurance app</div>
+
+  <div class="box"><b>Report within 72 hours of the damage.</b> {% if claim.open %}About {{ claim.hours_left }} hours left from the detected start date.{% else %}The 72-hour window from the detected date has passed; report anyway and explain when you noticed the damage.{% endif %}</div>
+
+  <h2>Loss</h2>
+  <table>
+    <tr><td>Type</td><td>{{ claim.label }} ({{ claim.kind.replace("_", " ") }})</td></tr>
+    <tr><td>Dates</td><td>{{ claim.start_date.strftime("%d %b %Y") }}{% if claim.end_date and claim.end_date != claim.start_date %} – {{ claim.end_date.strftime("%d %b %Y") }}{% endif %}</td></tr>
+    <tr><td>Crop and season</td><td>{{ claim.crop or "—" }} · {{ (claim.season or "")|capitalize }} {{ claim.year or "" }}</td></tr>
+    <tr><td>Evidence</td><td>{% for k, v in claim.evidence.items() if v is not none %}{{ k.replace("_", " ") }}: {% if v is sameas true %}yes{% elif v is sameas false %}no{% else %}{{ v }}{% endif %}{% if not loop.last %}; {% endif %}{% endfor %}</td></tr>
+  </table>
+
+  <h2>Field</h2>
+  <table>
+    <tr><td>Field</td><td>{{ field.name or "—" }}</td></tr>
+    <tr><td>Village / district / state</td><td>{{ field.village or "—" }} / {{ field.district or "—" }} / {{ field.state or "—" }}</td></tr>
+    <tr><td>Area</td><td>{{ "%.2f"|format(field.area_ha|float) }} ha ({{ "%.2f"|format(field.area_ha|float * 2.471) }} acres)</td></tr>
+    <tr><td>Location (lat, lon)</td><td>{{ "%.5f"|format(field.lat) }}, {{ "%.5f"|format(field.lon) }}</td></tr>
+  </table>
+
+  <h2>Steps</h2>
+  <ol>{% for s in steps %}<li>{{ s }}</li>{% endfor %}</ol>
+  <p>Ticket / docket number: <span class="blank">&nbsp;</span> &nbsp; Date reported: <span class="blank" style="min-width:30mm">&nbsp;</span></p>
+
+  <h2>Documents to keep ready</h2>
+  <ul>{% for d in documents %}<li>{{ d }}</li>{% endfor %}</ul>
+
+  <p class="muted">Evidence comes from free satellite (Sentinel-1/2, NISAR) and weather (Open-Meteo/ERA5) data. It supports
+  but does not replace the insurer's field survey. Widespread drought or flood in a notified area is settled
+  area-wide without an individual report.</p>
+</body>
+</html>
