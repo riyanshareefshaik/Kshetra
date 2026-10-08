@@ -74,7 +74,7 @@ def _svg_boundary(geojson: dict, size=150) -> str:
 def build_report_data(conn, field_id: str) -> dict:
     f = conn.execute(
         """SELECT id::text, name, village, district, state, area_ha, boundary_source, irrigation_type,
-                  soil_texture, clay_pct, sand_pct, ph_h2o, soc_g_per_kg, is_synthetic,
+                  soil_texture, clay_pct, sand_pct, ph_h2o, soc_g_per_kg,
                   ST_AsGeoJSON(boundary)::json AS boundary, ST_Y(location) AS lat, ST_X(location) AS lon
            FROM fields WHERE id = %s""",
         (field_id,),

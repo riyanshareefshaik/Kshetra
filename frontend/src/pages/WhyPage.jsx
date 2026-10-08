@@ -46,7 +46,7 @@ function Why() {
             <StatTile label={t("crop", lang)} value={<CropBadge season={season} />} />
             <StatTile label={t("yieldRange", lang)}
                       value={why.yield_t_ha.mid != null ? `${why.yield_t_ha.low.toFixed(1)}–${why.yield_t_ha.high.toFixed(1)}` : "—"}
-                      sub={why.yield_t_ha.mid != null ? `t/ha · ${why.is_forecast ? "forecast" : "estimate"} · ${why.method === "model" ? "trained model" : "district baseline"}` : "No yield data for this crop yet"} />
+                      sub={why.yield_t_ha.mid != null ? `t/ha · ${why.is_forecast ? "forecast, crop still in the field" : "estimate"}` : "Not enough data to estimate yet"} />
             <StatTile label="Stress events" value={why.events.filter((e) => e.event_type !== "fertilizer").length} sub="detected this season" />
           </div>
 

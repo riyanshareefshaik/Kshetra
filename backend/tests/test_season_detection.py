@@ -1,7 +1,7 @@
 from datetime import date
 
-from app.dev.synthetic import field_frame
 from app.ml.season_detection import detect_seasons, season_name
+from tests.synth import field_frame
 
 
 def test_detects_kharif_and_rabi_each_year():

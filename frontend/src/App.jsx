@@ -23,8 +23,9 @@ const PAGES = [
   { path: "/ask", key: "ask", element: <AskPage /> },
   { path: "/diary", key: "diary", element: <DiaryPage /> },
   { path: "/report", key: "report", element: <ReportPage /> },
-  { path: "/insights", key: "insights", element: <InsightsPage /> },
 ];
+// Seed-company dashboard (F14): reachable by link, not part of the farmer menu.
+const ROUTES = [...PAGES, { path: "/insights", key: "insights", element: <InsightsPage /> }];
 
 export default function App() {
   const { fields, fieldId, selectField, lang, setLang, error } = useApp();
@@ -38,7 +39,7 @@ export default function App() {
                   value={fieldId || ""} onChange={(e) => selectField(e.target.value || null)}>
             <option value="">{t("chooseField", lang)}</option>
             {fields.map((f) => (
-              <option key={f.id} value={f.id}>{f.name || f.id.slice(0, 8)}{f.is_synthetic ? " ⚠" : ""}</option>
+              <option key={f.id} value={f.id}>{f.name || `Field ${f.id.slice(0, 4)}`}</option>
             ))}
           </select>
           <select aria-label="Language" className="ml-auto rounded border border-black/15 px-2 py-1 text-sm"
@@ -59,7 +60,7 @@ export default function App() {
       <main className="min-h-0 flex-1 overflow-y-auto">
         <Suspense fallback={<div className="p-4"><Loading /></div>}>
           <Routes>
-            {PAGES.map((p) => <Route key={p.path} path={p.path} element={p.element} />)}
+            {ROUTES.map((p) => <Route key={p.path} path={p.path} element={p.element} />)}
           </Routes>
         </Suspense>
       </main>

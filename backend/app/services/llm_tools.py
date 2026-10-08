@@ -67,7 +67,7 @@ def _iso(d):
 def get_field_summary(conn, field_id: str) -> dict:
     f = conn.execute(
         """SELECT name, district, state, area_ha, irrigation_type, soil_texture, clay_pct, ph_h2o,
-                  soc_g_per_kg, ingest_status, is_synthetic FROM fields WHERE id = %s""",
+                  soc_g_per_kg, ingest_status FROM fields WHERE id = %s""",
         (field_id,),
     ).fetchone()
     if f is None:

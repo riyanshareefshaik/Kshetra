@@ -58,8 +58,6 @@ CREATE TABLE IF NOT EXISTS fields (
     cec_cmol_per_kg  real,
     bulk_density     real,
     soil_source      text,
-    -- Test/demo fields built from synthetic data are always labelled as such in the UI and PDF.
-    is_synthetic     boolean NOT NULL DEFAULT false,
     ingest_status    text NOT NULL DEFAULT 'pending'
                      CHECK (ingest_status IN ('pending', 'running', 'done', 'failed')),
     ingest_error     text,
@@ -349,7 +347,17 @@ HAVING count(DISTINCT f.id) >= 5;
 
 -- ---------------------------------------------------------------------
 -- Upgrades: columns added after the first release, for databases created earlier.
-ALTER TABLE fields ADD COLUMN IF NOT EXISTS is_synthetic boolean NOT NULL DEFAULT false;
+-- Remove synthetic demo data created by earlier versions, then the flag itself.
+DO $$
+BEGIN
+    IF EXISTS (SELECT 1 FROM information_schema.columns
+               WHERE table_name = 'fields' AND column_name = 'is_synthetic') THEN
+        DELETE FROM fields WHERE is_synthetic;
+        ALTER TABLE fields DROP COLUMN is_synthetic;
+    END IF;
+END $$;
+DELETE FROM district_yields WHERE source = 'synthetic';
+DELETE FROM users WHERE phone LIKE 'synthetic-%';
 ALTER TABLE crop_varieties ADD COLUMN IF NOT EXISTS recommended_n_kg_ha real;
 ALTER TABLE seasons ADD COLUMN IF NOT EXISTS yield_method text CHECK (yield_method IN ('model', 'baseline'));
 ALTER TABLE seasons ADD COLUMN IF NOT EXISTS features jsonb NOT NULL DEFAULT '{}';

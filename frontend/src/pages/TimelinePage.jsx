@@ -5,7 +5,7 @@ import {
 } from "recharts";
 import { api } from "../api.js";
 import { C, GapBar, axisProps } from "../components/tokens.jsx";
-import { Card, CropBadge, ErrorBox, EventTag, Loading, NeedField, Page, RangeBar, SyntheticBadge, eventStyle } from "../components/ui.jsx";
+import { Card, CropBadge, ErrorBox, EventTag, Loading, NeedField, Page, RangeBar, eventStyle } from "../components/ui.jsx";
 import { t } from "../i18n.js";
 import { useApp } from "../state.jsx";
 
@@ -24,7 +24,6 @@ function NdviTooltip({ active, payload }) {
       {p.ndvi_smoothed != null && <div>NDVI (smoothed): <span className="tabular">{p.ndvi_smoothed.toFixed(2)}</span></div>}
       {p.obs != null && <div style={{ color: "var(--series-1)" }}>● Sentinel-2: <span className="tabular">{p.obs.toFixed(2)}</span></div>}
       {p.fill != null && <div style={{ color: "var(--series-2)" }}>● From radar: <span className="tabular">{p.fill.toFixed(2)}</span></div>}
-      {p.sar_vh != null && <div className="text-[var(--text-secondary)]">Sentinel-1 VH: {p.sar_vh.toFixed(1)} dB</div>}
     </div>
   );
 }
@@ -56,7 +55,6 @@ function Timeline() {
     ndvi_smoothed: r.ndvi_smoothed,
     obs: r.ndvi_source === "s2" ? r.ndvi : null,
     fill: r.ndvi_source === "sar_fill" ? r.ndvi : null,
-    sar_vh: r.sar_vh,
     rain: r.is_step ? r.rain_step_mm : null,
   })), [rows]);
   const rain = data.filter((d) => d.rain != null);
@@ -76,7 +74,6 @@ function Timeline() {
 
   return (
     <Page title={`${t("timeline", lang)} · ${field?.name || ""}`} wide>
-      <SyntheticBadge show={field?.is_synthetic} />
       <ErrorBox error={error} />
       <div className="flex gap-1" role="group" aria-label="Time range">
         {Object.keys(RANGES).map((k) => (
@@ -89,7 +86,7 @@ function Timeline() {
 
       <Card title="Crop greenness from space (NDVI)">
         {!rows ? <Loading /> : data.length === 0 ? (
-          <p className="text-sm text-[var(--text-secondary)]">No satellite data yet. Check the field status on the Map page.</p>
+          <p className="text-sm text-[var(--text-secondary)]">No satellite data yet. Kshetra is still building this field's history; check its status on the Map page.</p>
         ) : (
           <>
             <div className="mb-2 flex flex-wrap gap-4 text-xs text-[var(--text-secondary)]">
@@ -148,7 +145,7 @@ function Timeline() {
                   <tr key={s.id} className="border-t border-black/5">
                     <td className="py-1.5 pr-3 capitalize">{s.season} {s.year}</td>
                     <td className="pr-3"><CropBadge season={s} /></td>
-                    <td className="tabular pr-3">{fullDate(s.sowing_date)}{["sar", "nisar"].includes(s.date_detection) && <span className="text-xs text-[var(--text-muted)]"> · radar</span>}</td>
+                    <td className="tabular pr-3">{fullDate(s.sowing_date)}{["sar", "nisar"].includes(s.date_detection) && <span className="text-xs text-[var(--text-muted)]"> · seen by radar</span>}</td>
                     <td className="tabular pr-3">{s.in_progress ? "in field" : s.harvest_date ? fullDate(s.harvest_date) : "—"}</td>
                     <td className="pr-3"><RangeBar low={s.yield_low_t_ha} mid={s.yield_mid_t_ha} high={s.yield_high_t_ha} max={maxYield} />
                       {s.yield_is_forecast && <span className="text-xs text-[var(--text-muted)]"> forecast</span>}</td>

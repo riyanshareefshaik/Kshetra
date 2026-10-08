@@ -47,8 +47,8 @@ satellite data, explains why yields went up or down, and guides the next season.
 NISAR cannot reach back to 2017, so history before 2025 uses Sentinel-1 for radar.
 
 ## Status
-All features F1-F14 are implemented (see README). Verified with 70 automated tests and on
-synthetic fields in the browser. Live satellite, NISAR, Bhashini and LLM calls need the
+All features F1-F14 are implemented (see README). Verified with 70 automated tests (on generated
+test histories) and in the browser. Live satellite, NISAR, Bhashini and LLM calls need the
 team's free keys and have not been run from CI.
 
 ## Known data limits

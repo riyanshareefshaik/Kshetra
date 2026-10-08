@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { GeoJSON, MapContainer, TileLayer, useMap } from "react-leaflet";
 import "@geoman-io/leaflet-geoman-free";
 import { api } from "../api.js";
-import { ErrorBox, SyntheticBadge } from "../components/ui.jsx";
+import { ErrorBox } from "../components/ui.jsx";
 import { useApp } from "../state.jsx";
 
 const CENTER = [16.5, 80.65];   // Krishna district, Andhra Pradesh
@@ -91,7 +91,7 @@ export default function MapPage() {
                    url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}" />
         {fields.map((f) => (
           <GeoJSON key={`${f.id}-${f.id === field?.id}`} data={f.boundary}
-                   style={{ color: f.id === field?.id ? "#fab219" : f.is_synthetic ? "#d03b3b" : "#ffffff", weight: 2, fillOpacity: 0.12 }}
+                   style={{ color: f.id === field?.id ? "#fab219" : "#ffffff", weight: 2, fillOpacity: 0.12 }}
                    eventHandlers={{ click: () => selectField(f.id) }} />
         ))}
         {draft && <GeoJSON key={JSON.stringify(draft.geometry)} data={draft.geometry} style={{ color: "#2a78d6", weight: 2, dashArray: null }} />}
@@ -155,30 +155,29 @@ function FieldPanel({ field, onChanged, onDeleted }) {
   }, [field.id, field.ingest_status]);
   const f = detail || field;
   const status = {
-    pending: "Waiting to build history…", running: "Building history from satellites and weather…",
-    done: "History ready", failed: "Some sources failed",
+    pending: "Getting ready…", running: "Building your field's history from satellite and weather data (a few minutes)…",
+    done: "History ready", failed: "Could not build the history yet",
   }[f.ingest_status] || f.ingest_status;
+  const BOUNDARY = { drawn: "drawn by you", auto_ndvi: "found from satellite images", auto_sam: "found from satellite images",
+                     pin_buffer: "approximate square around your pin — redraw it for better results" };
 
   return (
     <div className="space-y-3">
-      <div className="flex flex-wrap items-center gap-2">
-        <h2 className="font-semibold">{f.name || "Field"}</h2>
-        <SyntheticBadge show={f.is_synthetic} />
-      </div>
+      <h2 className="font-semibold">{f.name || "Field"}</h2>
       <ErrorBox error={error} />
       <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1">
         <dt className="text-[var(--text-secondary)]">Area</dt><dd>{f.area_ha?.toFixed(2)} ha ({(f.area_ha * 2.471).toFixed(2)} acres)</dd>
         <dt className="text-[var(--text-secondary)]">District</dt><dd>{f.district || "—"}</dd>
         {detail && <><dt className="text-[var(--text-secondary)]">Soil</dt><dd>{detail.soil_texture ? `${detail.soil_texture}, clay ${detail.clay_pct}%, pH ${detail.ph_h2o}` : "—"}</dd></>}
         {detail && <><dt className="text-[var(--text-secondary)]">Irrigation</dt><dd>{detail.irrigation_type || "—"}</dd></>}
-        {detail && <><dt className="text-[var(--text-secondary)]">Boundary</dt><dd>{detail.boundary_source.replace("_", " ")}</dd></>}
+        {detail && <><dt className="text-[var(--text-secondary)]">Boundary</dt><dd>{BOUNDARY[detail.boundary_source] || detail.boundary_source}</dd></>}
         <dt className="text-[var(--text-secondary)]">Status</dt><dd>{status}</dd>
       </dl>
-      {detail?.ingest_error && (
-        <details className="rounded bg-amber-50 p-2 text-xs text-amber-900">
-          <summary>Source notes</summary>
-          <p className="mt-1 whitespace-pre-wrap">{detail.ingest_error.replaceAll("; ", "\n")}</p>
-        </details>
+      {f.ingest_status === "failed" && (
+        <p className="rounded bg-amber-50 p-2 text-xs text-amber-900">Satellite or weather data could not be reached. Check the internet connection and press Refresh data.</p>
+      )}
+      {f.ingest_status === "done" && detail?.ingest_error && (
+        <p className="rounded bg-amber-50 p-2 text-xs text-amber-900">Some data sources were unavailable, so parts of the history may have gaps.</p>
       )}
       <div className="flex flex-wrap gap-2">
         <button className="rounded border border-black/15 px-3 py-1.5"

@@ -18,14 +18,12 @@
   .tag { display: inline-block; padding: 0 4px; border-radius: 3px; font-size: 8pt; }
   .uncertain { background: #fff3e0; color: #8a4b00; }
   .confident { background: #e8f5e9; color: #1b5e20; }
-  .synthetic { border: 2px solid #c62828; color: #c62828; padding: 6px 8px; font-weight: 700; margin: 8px 0; }
   .digest { font-family: monospace; font-size: 7.5pt; word-break: break-all; }
 </style>
 </head>
 <body>
   <h1>Field Health Report</h1>
   <div class="sub">{{ field.name or "Field" }} · {{ field.district or "" }}{% if field.state %}, {{ field.state }}{% endif %} · generated {{ generated }}</div>
-  {% if field.is_synthetic %}<div class="synthetic">SYNTHETIC TEST DATA — not a real field. Do not use for loans or insurance.</div>{% endif %}
 
   <h2>Field</h2>
   <div class="grid">

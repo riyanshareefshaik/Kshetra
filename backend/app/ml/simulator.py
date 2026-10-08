@@ -184,7 +184,8 @@ def _predict(ctx: FieldContext, sc: Scenario, rows: list[dict]):
         return preds[0], preds[1], preds[2], "model"
     history = district_yield_history(ctx.conn, ctx.field["state"], ctx.field["district"], sc.crop, sc.season)
     if not history:
-        raise LookupError(f"no trained yield model and no district yields for {sc.crop}; load district statistics")
+        raise LookupError(f"Not enough yield records for {sc.crop} in this district yet, so Kshetra cannot "
+                          "estimate it. Ask your administrator to load district crop statistics.")
     base = float(np.median(history))
     spread = max(float(np.std(history)) / base if len(history) > 1 else 0.0, 0.12)
     mids = np.array([base * _stress_factor(r, sc) for r in rows])

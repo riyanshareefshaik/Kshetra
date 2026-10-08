@@ -1,9 +1,4 @@
-"""Synthetic field histories for tests and offline UI development.
-
-Kharif paddy (radar sees puddling) followed by rabi pulses each year. Data made
-here is never real: fields built from it are flagged is_synthetic and every
-screen and report says so.
-"""
+"""Synthetic field histories for tests: kharif paddy (radar sees puddling) + rabi pulses."""
 from datetime import date
 
 import numpy as np

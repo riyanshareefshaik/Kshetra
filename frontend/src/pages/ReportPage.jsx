@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { api } from "../api.js";
 import { Card, ErrorBox, NeedField, Page } from "../components/ui.jsx";
 import { t } from "../i18n.js";
@@ -44,11 +45,10 @@ function Report() {
     <Page title={t("report", lang)}>
       <ErrorBox error={error} />
       <Card title="Field Health Report">
-        <p className="text-sm text-[var(--text-secondary)]">One PDF with the field's area and soil, crop greenness from space, every detected season with yield ranges, stress events with dates and evidence (useful for PMFBY claims), likely reasons, and the data sources. It carries a SHA-256 fingerprint so a bank can check it was not edited.</p>
+        <p className="text-sm text-[var(--text-secondary)]">One PDF with the field's area and soil, crop greenness from space, every detected season with yield ranges, stress events with dates and evidence (useful for PMFBY claims), likely reasons, and the data sources. It carries a security code so a bank can check it was not changed.</p>
         <button disabled={busy} onClick={download} className="mt-3 rounded bg-[var(--brand)] px-4 py-2 text-white disabled:opacity-50">
           {busy ? t("loading", lang) : t("download", lang)}
         </button>
-        {field?.is_synthetic && <p className="mt-2 text-sm text-[var(--status-critical)]">This field uses synthetic test data; the PDF says so on page 1.</p>}
       </Card>
       <Card title="Data sharing">
         {user ? (
@@ -63,6 +63,7 @@ function Report() {
           </label>
         ) : <p className="text-sm">Loading your settings…</p>}
       </Card>
+      <p className="text-xs text-[var(--text-muted)]">Seed companies see only shared, combined numbers: <Link className="underline" to="/insights">view what they see</Link>.</p>
     </Page>
   );
 }

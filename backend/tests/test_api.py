@@ -18,7 +18,7 @@ def client(db_url, monkeypatch_module):
     monkeypatch_module.setenv("GEE_PROJECT", "")
     from app.config import get_settings
     get_settings.cache_clear()
-    from scripts.seed_synthetic import seed
+    from tests.fixtures import seed
     with psycopg.connect(db_url, row_factory=dict_row) as conn:
         ids = seed(conn, 6)
     from app.main import app
@@ -45,7 +45,7 @@ def kharif_season(client, fid, year=2023):
 def test_health_and_fields(client):
     assert client.get("/health").json() == {"status": "ok", "database": "ok"}
     fields = client.get("/api/fields").json()
-    assert len(fields) == 6 and all(f["is_synthetic"] for f in fields)
+    assert len(fields) == 6
     f = client.get(f"/api/fields/{client.ids[0]}").json()
     assert f["boundary"]["type"] == "Polygon" and f["area_ha"] > 0.5
     assert client.get("/api/fields/not-a-uuid").status_code == 404

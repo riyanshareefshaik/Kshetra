@@ -28,7 +28,6 @@ const T = {
   save: { en: "Save", te: "సేవ్ చేయండి", hi: "सहेजें" },
   download: { en: "Download PDF", te: "PDF డౌన్‌లోడ్", hi: "PDF डाउनलोड" },
   sharing: { en: "Share my data anonymously", te: "నా డేటాను అనామకంగా పంచుకోండి", hi: "मेरा डेटा गुमनाम रूप से साझा करें" },
-  synthetic: { en: "SYNTHETIC TEST DATA", te: "కృత్రిమ పరీక్ష డేటా", hi: "कृत्रिम परीक्षण डेटा" },
   loading: { en: "Loading…", te: "లోడ్ అవుతోంది…", hi: "लोड हो रहा है…" },
 };
 

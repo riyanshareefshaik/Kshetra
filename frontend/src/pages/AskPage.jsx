@@ -11,6 +11,22 @@ const EXAMPLES = {
   hi: ["मेरी पिछली खरीफ़ उपज कम क्यों थी?", "मेरे खेत में कौन सी फसलें उगाई गईं?", "10 जुलाई को धान बोऊँ तो कितना मुनाफ़ा होगा?"],
 };
 
+const SOURCE_NAMES = {
+  get_field_summary: "Your field record and season list",
+  get_season: "Season record",
+  get_yield_explanation: "Yield estimate and likely reasons",
+  find_field_twins: "Similar fields",
+  search_diary: "Your diary notes",
+  run_what_if: "What-if simulation on your field's past weather",
+};
+
+function sourceLabel(s) {
+  const a = s.args || {};
+  const when = a.season && a.year ? ` (${a.season} ${a.year})` : "";
+  const what = a.crop ? ` (${a.crop}${a.sowing_date ? `, sown ${a.sowing_date}` : ""})` : a.query ? ` ("${a.query}")` : "";
+  return `${SOURCE_NAMES[s.tool] || "Field data"}${when}${what}`;
+}
+
 export default function AskPage() {
   return <NeedField><Ask /></NeedField>;
 }
@@ -110,17 +126,13 @@ function Ask() {
             <p className={`mt-2 whitespace-pre-wrap ${m.answered === false ? "text-[var(--text-secondary)]" : ""}`}>{m.answer}</p>
             <div className="mt-2 flex flex-wrap items-center gap-3 text-xs">
               <button onClick={() => speak(m.answer, m.language || lang).catch(setError)} className="rounded border border-black/10 px-2 py-0.5">🔊 Listen</button>
-              {m.llm_provider || m.provider ? <span className="text-[var(--text-muted)]">via {m.llm_provider || m.provider}</span> : null}
             </div>
             {m.sources?.length > 0 && (
               <details className="mt-2 text-xs">
                 <summary className="cursor-pointer text-[var(--text-secondary)]">{t("sources", lang)} ({m.sources.length})</summary>
-                {m.sources.map((s, j) => (
-                  <div key={j} className="mt-1 rounded bg-[var(--page)] p-2">
-                    <div className="font-mono">{s.tool}({Object.entries(s.args || {}).map(([k, v]) => `${k}=${v}`).join(", ")})</div>
-                    <pre className="mt-1 max-h-48 overflow-auto whitespace-pre-wrap text-[11px] text-[var(--text-secondary)]">{JSON.stringify(s.data, null, 1)}</pre>
-                  </div>
-                ))}
+                <ul className="mt-1 list-disc space-y-0.5 pl-5 text-[var(--text-secondary)]">
+                  {m.sources.map((s, j) => <li key={j}>{sourceLabel(s)}</li>)}
+                </ul>
               </details>
             )}
           </Card>

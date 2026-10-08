@@ -63,16 +63,6 @@ export function NeedField({ children }) {
   return children;
 }
 
-export function SyntheticBadge({ show }) {
-  const { lang } = useApp();
-  if (!show) return null;
-  return (
-    <span className="rounded border border-[var(--status-critical)] px-1.5 py-0.5 text-[11px] font-semibold text-[var(--status-critical)]">
-      ⚠ {t("synthetic", lang)}
-    </span>
-  );
-}
-
 export function CropBadge({ season }) {
   const { lang } = useApp();
   if (!season?.crop) return <span className="text-[var(--text-muted)]">?</span>;

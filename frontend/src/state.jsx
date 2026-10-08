@@ -34,7 +34,7 @@ export function AppProvider({ children }) {
       setFields(await api.fields());
       setError(null);
     } catch (e) {
-      setError(`Cannot reach the Kshetra API (${e.message}).`);
+      setError("Can't connect to Kshetra right now. Check your internet connection and try again.");
     }
   }, []);
 

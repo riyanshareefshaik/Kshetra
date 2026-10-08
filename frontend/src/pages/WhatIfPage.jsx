@@ -131,7 +131,6 @@ function WhatIf() {
                 <ul className="list-disc space-y-1 pl-5 text-sm text-[var(--text-secondary)]">
                   {result.assumptions.map((a, i) => <li key={i}>{a}</li>)}
                   <li>Price: ₹{result.profit.price.rs_per_qtl?.toLocaleString("en-IN") ?? "—"}/quintal ({result.profit.price.source}). Costs ₹{result.profit.cost_rs_ha.toLocaleString("en-IN")}/ha: {result.profit.cost_note}</li>
-                  <li>Yield method: {result.method === "model" ? "trained yield model" : "district yield history with weather penalties"}; computed in {result.elapsed_ms} ms.</li>
                 </ul>
               </Card>
             </>

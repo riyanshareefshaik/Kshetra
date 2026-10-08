@@ -1,6 +1,6 @@
 """Train the yield model (and, when farmers have confirmed enough seasons, the crop model).
 
-    python -m scripts.train_models            # after seed_demo + load_reference
+    python -m scripts.train_models            # after fields are built + load_reference
     python -m scripts.analyze_all             # then refresh every field with the new models
 
 Yield labels: district yield for the season's crop, district and year
@@ -38,7 +38,7 @@ def yield_training_frame(conn) -> pd.DataFrame:
                         AND d.crop = s.crop AND d.year = s.year AND d.season = 'total' AND d.yield_t_ha > 0)
                   ) AS target
            FROM seasons s JOIN fields f ON f.id = s.field_id
-           WHERE NOT s.in_progress AND s.crop IS NOT NULL AND NOT f.is_synthetic
+           WHERE NOT s.in_progress AND s.crop IS NOT NULL
              AND (s.crop_confidence >= 0.6 OR s.crop_confirmed_by_farmer)"""
     ).fetchall()
     data = [{**{k: r["features"].get(k) for k in FEATURES}, "crop": r["crop"], "year": r["year"],
@@ -55,8 +55,7 @@ def train_yield(conn) -> dict:
 
 def train_crop(conn) -> dict:
     rows = conn.execute(
-        """SELECT s.features, s.crop FROM seasons s JOIN fields f ON f.id = s.field_id
-           WHERE s.crop_confirmed_by_farmer AND s.crop IS NOT NULL AND NOT f.is_synthetic"""
+        "SELECT features, crop FROM seasons WHERE crop_confirmed_by_farmer AND crop IS NOT NULL"
     ).fetchall()
     counts = pd.Series([r["crop"] for r in rows]).value_counts()
     if len(rows) < MIN_CONFIRMED or len(counts) < 2 or counts.min() < 2:

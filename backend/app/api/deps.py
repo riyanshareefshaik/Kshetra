@@ -19,7 +19,7 @@ def field_or_404(conn, field_id: str) -> dict:
         row = conn.execute(
             """SELECT id::text, owner_id::text, name, village, district, state, area_ha, boundary_source,
                       irrigation_type, soil_texture, clay_pct, sand_pct, silt_pct, soc_g_per_kg, ph_h2o,
-                      nitrogen_g_per_kg, ingest_status, ingest_error, is_synthetic, created_at,
+                      nitrogen_g_per_kg, ingest_status, ingest_error, created_at,
                       ST_AsGeoJSON(boundary)::json AS boundary, ST_Y(location) AS lat, ST_X(location) AS lon
                FROM fields WHERE id = %s""",
             (field_id,),

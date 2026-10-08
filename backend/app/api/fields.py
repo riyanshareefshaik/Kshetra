@@ -106,7 +106,7 @@ def create_field(body: FieldIn, tasks: BackgroundTasks, conn=Depends(db)):
 @router.get("/fields")
 def list_fields(owner_id: str | None = None, conn=Depends(db)):
     rows = conn.execute(
-        """SELECT f.id::text, f.name, f.district, f.state, f.area_ha, f.ingest_status, f.is_synthetic,
+        """SELECT f.id::text, f.name, f.district, f.state, f.area_ha, f.ingest_status,
                   ST_Y(f.location) AS lat, ST_X(f.location) AS lon, ST_AsGeoJSON(f.boundary)::json AS boundary,
                   (SELECT count(*) FROM seasons s WHERE s.field_id = f.id) AS seasons
            FROM fields f WHERE (%s::uuid IS NULL OR f.owner_id = %s::uuid) ORDER BY f.created_at""",

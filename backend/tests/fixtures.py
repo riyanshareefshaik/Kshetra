@@ -1,14 +1,4 @@
-"""Create clearly-labelled SYNTHETIC demo fields for offline development and UI testing.
-
-    python -m scripts.seed_synthetic          # 6 fields, 2018-2025, plus synthetic district stats
-
-Everything created here is flagged is_synthetic=true (UI badge, PDF banner),
-uses the district name "Synthetic", and must never be shown as real results.
-It never trains the yield model (train_models also ignores synthetic fields),
-so yields here come from the baseline method.
-Delete it with:  python -m scripts.seed_synthetic --delete
-"""
-import argparse
+"""Test fixture: six fields with synthetic histories, district statistics and consenting owners."""
 import json
 from datetime import date
 
@@ -16,12 +6,11 @@ import numpy as np
 from psycopg.types.json import Jsonb
 
 from app.db.seeds import load_crop_varieties
-from app.db.session import get_conn
-from app.dev.synthetic import field_frame
 from app.ml.analyze import analyze_field
 from app.services.boundary import pin_square
+from tests.synth import field_frame
 
-DISTRICT, STATE = "Synthetic", "Andhra Pradesh"
+DISTRICT, STATE = "Testdistrict", "Andhra Pradesh"
 YEARS = tuple(range(2018, 2026))
 CENTRES = [(16.44, 80.78), (16.36, 80.83), (16.32, 80.95), (16.45, 80.96), (16.23, 80.90), (16.26, 81.13)]
 TS_COLS = ["ndvi", "ndvi_smoothed", "ndvi_source", "sar_vv", "sar_vh", "rainfall_mm", "temp_max_c", "et0_mm"]
@@ -38,35 +27,27 @@ def _frame(i: int):
     return df
 
 
-def delete(conn):
-    conn.execute("DELETE FROM fields WHERE is_synthetic")
-    conn.execute("DELETE FROM district_yields WHERE source = 'synthetic'")
-    conn.execute("DELETE FROM users WHERE phone LIKE 'synthetic-%'")
-    conn.commit()
-
-
 def seed(conn, n_fields: int = 6):
-    delete(conn)
     load_crop_varieties(conn)
     for year in YEARS:
         conn.execute("""INSERT INTO district_yields (state, district, year, season, crop, area_ha, yield_t_ha, source)
-                        VALUES (%s, %s, %s, 'kharif', 'paddy', 300000, %s, 'synthetic'),
-                               (%s, %s, %s, 'rabi', 'pulses', 120000, %s, 'synthetic')""",
+                        VALUES (%s, %s, %s, 'kharif', 'paddy', 300000, %s, 'test'),
+                               (%s, %s, %s, 'rabi', 'pulses', 120000, %s, 'test')""",
                      (STATE, DISTRICT, year, round(5.0 + 0.3 * np.sin(year), 2), STATE, DISTRICT, year,
                       round(0.85 + 0.1 * np.cos(year), 2)))
     ids = []
     for i in range(n_fields):
         owner = conn.execute("INSERT INTO users (name, phone, preferred_language, data_sharing_consent) "
                              "VALUES (%s, %s, 'te', true) RETURNING id::text",
-                             (f"Synthetic farmer {i + 1}", f"synthetic-{i}")).fetchone()["id"]
+                             (f"Test farmer {i + 1}", f"test-{i}")).fetchone()["id"]
         lat, lon = CENTRES[i % len(CENTRES)]
         fid = conn.execute(
             """INSERT INTO fields (owner_id, name, boundary, boundary_source, district, state, irrigation_type,
                                    soil_texture, clay_pct, sand_pct, silt_pct, ph_h2o, soc_g_per_kg,
-                                   is_synthetic, ingest_status)
+                                   ingest_status)
                VALUES (%s, %s, ST_SetSRID(ST_GeomFromGeoJSON(%s), 4326), 'pin_buffer', %s, %s, %s,
-                       'clay', %s, 25, 30, 7.9, 6.5, true, 'done') RETURNING id::text""",
-            (owner, f"[SYNTHETIC] Demo field {i + 1}", json.dumps(pin_square(lat, lon)), DISTRICT, STATE,
+                       'clay', %s, 25, 30, 7.9, 6.5, 'done') RETURNING id::text""",
+            (owner, f"Test field {i + 1}", json.dumps(pin_square(lat, lon)), DISTRICT, STATE,
              "canal" if i % 2 == 0 else "borewell", 40 + 2 * i),
         ).fetchone()["id"]
         df = _frame(i)
@@ -91,21 +72,3 @@ def seed(conn, n_fields: int = 6):
     for fid in ids:
         analyze_field(conn, fid)
     return ids
-
-
-def main():
-    ap = argparse.ArgumentParser(description="Synthetic demo data (clearly labelled, never real)")
-    ap.add_argument("--delete", action="store_true")
-    ap.add_argument("--fields", type=int, default=6)
-    args = ap.parse_args()
-    with get_conn() as conn:
-        if args.delete:
-            delete(conn)
-            print("synthetic data removed")
-            return
-        ids = seed(conn, args.fields)
-        print(f"created {len(ids)} synthetic fields")
-
-
-if __name__ == "__main__":
-    main()

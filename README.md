@@ -24,18 +24,18 @@ free and open source. See [docs/PRD.md](docs/PRD.md) and [docs/architecture.md](
 | F13 | Data sharing off by default; anonymised when on | Report |
 | F14 | Seed company dashboard, aggregates of 5+ fields only | Insights |
 
-## Quick start (no keys needed)
+## Quick start
 
 ```bash
-cp .env.example .env
+git clone https://github.com/riyanshareefshaik/Kshetra.git && cd Kshetra
+cp .env.example .env                               # add at least GEE_PROJECT (see "Getting the free keys")
+earthengine authenticate                           # once (pip install earthengine-api)
 docker compose up --build -d                       # Postgres+PostGIS+pgvector, API, web
-docker compose exec api python -m scripts.seed_synthetic
 # open http://localhost:5173  (API docs: http://localhost:8000/docs)
 ```
 
-`seed_synthetic` creates six **clearly labelled synthetic** fields (red badge in the app, red banner
-in the PDF) so every page can be explored offline. Remove them with
-`python -m scripts.seed_synthetic --delete`. Never present them as real results.
+The app starts empty. On the **Map** page, draw your field (or drop a pin); Kshetra builds its
+history from satellite and weather data in the background (a few minutes), then every page fills in.
 
 ### Without Docker
 
@@ -63,8 +63,7 @@ System packages for PDF and OCR (already in the Docker images):
 earthengine authenticate                      # once, with your free non-commercial project
 cd backend
 python -m scripts.load_reference apy ../data/district_apy.csv      # district yields (see below)
-python -m scripts.seed_demo --start 2023-01-01 --limit 2           # 8 Krishna demo pins, quick try
-python -m scripts.seed_demo                                        # full 2017 → yesterday
+python -m scripts.refresh_fields                                   # update every field (also done from the app)
 python -m scripts.fetch_prices                                     # today's mandi prices (run daily)
 python -m scripts.train_models && python -m scripts.analyze_all    # once 30+ confident seasons exist
 ```
@@ -118,7 +117,7 @@ No key needed: Open-Meteo, NASA POWER, SoilGrids, Ollama (`ollama pull qwen2.5:7
 4. **CI — GitHub Actions** (`.github/workflows/ci.yml`): lint, 70 backend tests on PostGIS +
    pgvector, frontend build. Free for public repos; private repos get 2,000 free minutes/month.
 
-Before a demo: open the Space (wakes it), restore Supabase if paused, and make sure the demo
+Before a demo: open the Space (wakes it), restore Supabase if paused, and make sure your
 fields were ingested while online.
 
 ## Free-tier limits to know
@@ -139,7 +138,7 @@ frontend/    React + Vite + Tailwind + Leaflet/Geoman + Recharts (9 pages)
 backend/app/ api/ (one router per feature) · services/ (Earth Engine, NISAR, weather, soil,
              prices, LLM + tools, memory, voice, OCR, PDF, boundary, cache, ingest)
              ml/ (gap fill, seasons, features, crop, stress, yield, SHAP, twins, simulator)
-backend/scripts/  seed_demo, seed_synthetic, load_reference, fetch_prices, train_models, analyze_all
+backend/scripts/  refresh_fields, load_reference, fetch_prices, train_models, analyze_all
 database/    schema.sql (4 memory layers), seeds/, Dockerfile (local PostGIS + pgvector)
 notebooks/   Colab/Kaggle notebook: plot a field, train the yield model
 docs/        PRD.md, architecture.md
