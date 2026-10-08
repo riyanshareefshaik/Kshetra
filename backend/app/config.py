@@ -16,6 +16,7 @@ class Settings(BaseSettings):
     supabase_key: str = ""
     data_gov_api_key: str = ""
     bhashini_key: str = ""
+    bhashini_user_id: str = ""
 
     earthdata_token: str = ""
     bhoonidhi_username: str = ""
@@ -23,7 +24,10 @@ class Settings(BaseSettings):
 
     llm_provider_order: str = "groq,gemini,ollama"
     ollama_url: str = "http://localhost:11434"
-    ollama_model: str = "qwen2.5:3b"
+    ollama_model: str = "qwen2.5:7b"
+    groq_model: str = "openai/gpt-oss-120b"
+    gemini_model: str = "gemini-flash-latest"
+    whisper_model: str = "small"
 
     cors_origins: str = "http://localhost:5173"
 
