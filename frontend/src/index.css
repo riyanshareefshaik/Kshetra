@@ -1,3 +1,25 @@
 @import "tailwindcss";
 
+/* Chart and status tokens (dataviz reference palette, light surface). */
+:root {
+  color-scheme: light;
+  --surface-1: #fcfcfb;
+  --page: #f9f9f7;
+  --text-primary: #0b0b0b;
+  --text-secondary: #52514e;
+  --text-muted: #898781;
+  --grid: #e1e0d9;
+  --axis: #c3c2b7;
+  --series-1: #2a78d6;   /* observed / primary series */
+  --series-2: #eb6834;   /* radar-filled NDVI */
+  --band: #efeee9;       /* crop season bands (neutral) */
+  --status-good: #0ca30c;
+  --status-warning: #fab219;
+  --status-serious: #ec835a;
+  --status-critical: #d03b3b;
+  --brand: #1b5e20;
+}
+
 html, body, #root { height: 100%; }
+body { background: var(--page); color: var(--text-primary); font-family: system-ui, -apple-system, "Segoe UI", "Noto Sans Telugu", "Noto Sans Devanagari", sans-serif; }
+.tabular { font-variant-numeric: tabular-nums; }
