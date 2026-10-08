@@ -1,8 +1,8 @@
 import numpy as np
 
+from app.dev.synthetic import field_frame
 from app.ml.season_detection import detect_seasons
 from app.ml.stress_detection import detect_stress
-from tests.synth import field_frame
 
 
 def kharif(df):

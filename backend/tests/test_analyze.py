@@ -2,9 +2,9 @@ import json
 
 import numpy as np
 
+from app.dev.synthetic import field_frame
 from app.ml.analyze import analyze_field
 from app.ml.field_twins import find_twins
-from tests.synth import field_frame
 
 SQUARE = {"type": "Polygon", "coordinates": [[
     [80.7786, 16.4401], [80.7794, 16.4401], [80.7794, 16.4409], [80.7786, 16.4409], [80.7786, 16.4401]]]}
