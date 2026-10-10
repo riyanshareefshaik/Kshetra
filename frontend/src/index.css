@@ -1,25 +1,95 @@
 @import "tailwindcss";
 
-/* Chart and status tokens (dataviz reference palette, light surface). */
+/* Kshetra look: paddy-green, harvest-gold and soil tones on warm paper.
+   Chart colours stay on the validated dataviz palette (components/tokens.jsx). */
 :root {
   color-scheme: light;
-  --surface-1: #fcfcfb;
-  --page: #f9f9f7;
-  --text-primary: #0b0b0b;
-  --text-secondary: #52514e;
-  --text-muted: #898781;
-  --grid: #e1e0d9;
-  --axis: #c3c2b7;
-  --series-1: #2a78d6;   /* observed / primary series */
-  --series-2: #eb6834;   /* radar-filled NDVI */
-  --band: #efeee9;       /* crop season bands (neutral) */
+  --surface-1: #ffffff;
+  --page: #f6f3ea;
+  --text-primary: #1d2b1f;
+  --text-secondary: #4f5a4f;
+  --text-muted: #858b80;
+  --grid: #e5e2d6;
+  --axis: #c9c5b5;
+  --series-1: #2a78d6;
+  --series-2: #eb6834;
+  --band: #efeee9;
   --status-good: #0ca30c;
   --status-warning: #fab219;
   --status-serious: #ec835a;
   --status-critical: #d03b3b;
+
   --brand: #1b5e20;
+  --brand-900: #0f3d1e;
+  --leaf: #2e7d32;
+  --leaf-50: #ecf6ea;
+  --leaf-100: #d6ecd2;
+  --gold: #e9a823;
+  --gold-50: #fdf4dd;
+  --soil: #7a5a43;
+  --soil-50: #f4ece4;
+  --sky: #3b82c4;
+  --sky-50: #e6f0fa;
 }
 
 html, body, #root { height: 100%; }
-body { background: var(--page); color: var(--text-primary); font-family: system-ui, -apple-system, "Segoe UI", "Noto Sans Telugu", "Noto Sans Devanagari", sans-serif; }
+body {
+  background-color: var(--page);
+  /* faint furrows, like a ploughed field seen from above */
+  background-image: repeating-linear-gradient(-28deg, rgba(122, 90, 67, 0.035) 0 2px, transparent 2px 22px);
+  color: var(--text-primary);
+  font-family: system-ui, -apple-system, "Segoe UI", "Noto Sans", "Noto Sans Telugu", "Noto Sans Devanagari", sans-serif;
+  -webkit-tap-highlight-color: transparent;
+}
+h1, h2, h3, .font-display {
+  font-family: "Baloo 2", "Baloo Tammudu 2", system-ui, sans-serif;
+  letter-spacing: -0.005em;
+}
 .tabular { font-variant-numeric: tabular-nums; }
+
+/* Header: deep green with a hint of crop rows */
+.k-header {
+  background: linear-gradient(120deg, var(--brand-900), var(--brand) 55%, var(--leaf));
+  background-image:
+    repeating-linear-gradient(100deg, rgba(255, 255, 255, 0.05) 0 1px, transparent 1px 14px),
+    linear-gradient(120deg, var(--brand-900), var(--brand) 55%, var(--leaf));
+}
+
+.k-card {
+  background: var(--surface-1);
+  border: 1px solid rgba(29, 43, 31, 0.07);
+  border-radius: 1rem;
+  box-shadow: 0 1px 2px rgba(29, 43, 31, 0.04), 0 4px 16px -8px rgba(29, 43, 31, 0.12);
+}
+
+.k-hero {
+  border-radius: 1.25rem;
+  color: #fff;
+  background:
+    radial-gradient(120% 90% at 100% 0%, rgba(233, 168, 35, 0.35), transparent 55%),
+    linear-gradient(135deg, var(--brand-900), var(--leaf));
+  box-shadow: 0 10px 30px -14px rgba(15, 61, 30, 0.55);
+}
+
+/* Loading placeholder */
+.k-skeleton {
+  background: linear-gradient(90deg, #ece8dc 0%, #f7f4ec 50%, #ece8dc 100%);
+  background-size: 200% 100%;
+  animation: k-shimmer 1.2s ease-in-out infinite;
+  border-radius: 0.75rem;
+}
+@keyframes k-shimmer { from { background-position: 200% 0; } to { background-position: -200% 0; } }
+
+.k-rise { animation: k-rise 0.35s ease-out both; }
+@keyframes k-rise { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+.k-pop { animation: k-pop 0.3s ease-out; }
+@keyframes k-pop { 0% { transform: scale(0.6); } 70% { transform: scale(1.15); } 100% { transform: scale(1); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .k-skeleton, .k-rise, .k-pop { animation: none; }
+}
+
+/* Room for the phone tab bar */
+.k-safe-bottom { padding-bottom: calc(4.5rem + env(safe-area-inset-bottom)); }
+@media (min-width: 1024px) { .k-safe-bottom { padding-bottom: 0; } }

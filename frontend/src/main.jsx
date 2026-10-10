@@ -5,6 +5,10 @@ import App from "./App.jsx";
 import { AppProvider } from "./state.jsx";
 import "leaflet/dist/leaflet.css";
 import "@geoman-io/leaflet-geoman-free/dist/leaflet-geoman.css";
+import "@fontsource/baloo-2/500.css";
+import "@fontsource/baloo-2/700.css";
+import "@fontsource/baloo-tammudu-2/500.css";
+import "@fontsource/baloo-tammudu-2/700.css";
 import "./index.css";
 
 createRoot(document.getElementById("root")).render(
