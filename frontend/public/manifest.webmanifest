@@ -2,7 +2,7 @@
   "name": "Kshetra — your field from space",
   "short_name": "Kshetra",
   "description": "Field history from satellites, weather alerts, irrigation and fertilizer advice, in Telugu, Hindi and English.",
-  "start_url": "/today",
+  "start_url": "/",
   "scope": "/",
   "display": "standalone",
   "background_color": "#f9f9f7",

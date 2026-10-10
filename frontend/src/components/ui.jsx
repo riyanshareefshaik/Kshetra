@@ -1,13 +1,30 @@
+import { Link, useLocation } from "react-router-dom";
+import { ALL_PAGES } from "../nav.js";
+import { MapPin, Sprout, Volume2 } from "lucide-react";
 import { useApp } from "../state.jsx";
 import { cropName, t } from "../i18n.js";
+import { FieldScene, CropIcon } from "./art.jsx";
 import { C } from "./tokens.jsx";
 
-export function Card({ title, children, className = "", actions }) {
+const TONES = {
+  leaf: "bg-[var(--leaf-50)] text-[var(--brand)]",
+  gold: "bg-[var(--gold-50)] text-[#9a6a06]",
+  sky: "bg-[var(--sky-50)] text-[var(--sky)]",
+  soil: "bg-[var(--soil-50)] text-[var(--soil)]",
+  red: "bg-red-50 text-[var(--status-critical)]",
+};
+
+export function IconBadge({ icon: Icon, tone = "leaf", size = 18 }) {
+  if (!Icon) return null;
+  return <span className={`grid h-8 w-8 shrink-0 place-items-center rounded-xl ${TONES[tone]}`}><Icon size={size} strokeWidth={2.1} /></span>;
+}
+
+export function Card({ title, icon, tone = "leaf", children, className = "", actions }) {
   return (
-    <section className={`rounded-lg border border-black/10 bg-[var(--surface-1)] p-4 ${className}`}>
+    <section className={`k-card k-rise p-4 sm:p-5 ${className}`}>
       {(title || actions) && (
         <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-          {title && <h2 className="text-base font-semibold">{title}</h2>}
+          {title && <h2 className="flex items-center gap-2 text-lg font-semibold leading-tight"><IconBadge icon={icon} tone={tone} />{title}</h2>}
           {actions}
         </div>
       )}
@@ -16,45 +33,80 @@ export function Card({ title, children, className = "", actions }) {
   );
 }
 
-export function Page({ title, children, wide = false }) {
+export function Page({ title, icon, subtitle, children, wide = false }) {
+  const { pathname } = useLocation();
+  icon = icon || ALL_PAGES.find((p) => p.path === pathname)?.icon;
   return (
-    <div className={`mx-auto w-full ${wide ? "max-w-6xl" : "max-w-4xl"} space-y-4 px-4 py-5`}>
-      {title && <h1 className="text-xl font-semibold">{title}</h1>}
+    <div className={`mx-auto w-full ${wide ? "max-w-6xl" : "max-w-4xl"} space-y-4 px-4 py-5 sm:px-6`}>
+      {title && (
+        <div className="flex items-center gap-3">
+          {icon && <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-[var(--brand)] text-white shadow-sm">{(() => { const I = icon; return <I size={22} />; })()}</span>}
+          <div className="min-w-0">
+            <h1 className="truncate text-2xl font-bold leading-tight">{title}</h1>
+            {subtitle && <p className="truncate text-sm text-[var(--text-secondary)]">{subtitle}</p>}
+          </div>
+        </div>
+      )}
       {children}
     </div>
   );
 }
 
-export function StatTile({ label, value, sub }) {
+export function StatTile({ label, value, sub, icon, tone = "leaf" }) {
   return (
-    <div className="rounded-lg border border-black/10 bg-[var(--surface-1)] p-3">
-      <div className="text-xs text-[var(--text-secondary)]">{label}</div>
-      <div className="mt-1 text-2xl font-semibold">{value}</div>
+    <div className="k-card k-rise p-3.5">
+      <div className="flex items-center gap-2 text-xs text-[var(--text-secondary)]">{icon && <IconBadge icon={icon} tone={tone} size={15} />}{label}</div>
+      <div className="font-display mt-1.5 text-2xl font-bold">{value}</div>
       {sub && <div className="mt-0.5 text-xs text-[var(--text-muted)]">{sub}</div>}
     </div>
   );
 }
 
-export function Loading() {
+export function Loading({ lines = 3 }) {
   const { lang } = useApp();
-  return <p className="text-sm text-[var(--text-secondary)]">{t("loading", lang)}</p>;
+  return (
+    <div className="space-y-2" aria-busy="true" aria-label={t("loading", lang)}>
+      <div className="k-skeleton h-24" />
+      {Array.from({ length: lines - 1 }).map((_, i) => <div key={i} className="k-skeleton h-4" style={{ width: `${85 - i * 20}%` }} />)}
+    </div>
+  );
 }
 
 export function ErrorBox({ error }) {
   if (!error) return null;
   return (
-    <div role="alert" className="rounded-md border border-[var(--status-critical)]/40 bg-red-50 px-3 py-2 text-sm text-red-900">
+    <div role="alert" className="rounded-2xl border border-[var(--status-critical)]/30 bg-red-50 px-4 py-2.5 text-sm text-red-900">
       {String(error.message || error)}
     </div>
   );
 }
 
+/** Shown when a page needs a field and none is chosen. */
 export function NeedField({ children }) {
-  const { fieldId, lang } = useApp();
-  if (!fieldId) {
-    return <Page><Card><p className="text-[var(--text-secondary)]">{t("noField", lang)}</p></Card></Page>;
-  }
-  return children;
+  const { fieldId, fields, selectField, lang } = useApp();
+  if (fieldId) return children;
+  return (
+    <Page>
+      <div className="k-card overflow-hidden">
+        <FieldScene className="h-36 w-full" />
+        <div className="space-y-3 p-5">
+          <h2 className="text-xl font-bold">{t(fields.length ? "start.pick" : "start.title", lang)}</h2>
+          {fields.length > 0 ? (
+            <div className="grid gap-2 sm:grid-cols-2">
+              {fields.map((f) => (
+                <button key={f.id} onClick={() => selectField(f.id)}
+                        className="flex items-center gap-3 rounded-xl border border-black/10 bg-white p-3 text-left hover:border-[var(--leaf)]">
+                  <IconBadge icon={Sprout} /><span><b>{f.name || "Field"}</b><span className="block text-xs text-[var(--text-muted)]">{f.area_ha?.toFixed(2)} ha · {f.district || ""}</span></span>
+                </button>
+              ))}
+            </div>
+          ) : (
+            <Link to="/map" className="inline-flex items-center gap-2 rounded-xl bg-[var(--brand)] px-4 py-2.5 text-white"><MapPin size={18} />{t("start.add", lang)}</Link>
+          )}
+        </div>
+      </div>
+    </Page>
+  );
 }
 
 export function CropBadge({ season }) {
@@ -63,7 +115,8 @@ export function CropBadge({ season }) {
   const pct = season.crop_confidence != null ? Math.round(season.crop_confidence * 100) : null;
   const uncertain = season.crop_status === "uncertain";
   return (
-    <span className="inline-flex items-center gap-1">
+    <span className="inline-flex items-center gap-1.5">
+      <CropIcon crop={season.crop} size={20} />
       <span className="font-medium">{cropName(season.crop, lang)}</span>
       {season.crop_confirmed_by_farmer ? (
         <span className="rounded bg-green-50 px-1 text-[11px] text-green-800">✓ {t("confirmedByFarmer", lang)}</span>
@@ -130,7 +183,7 @@ export function RangeBar({ low, mid, high, max }) {
 export function SeasonSelect({ seasons, value, onChange }) {
   const { lang } = useApp();
   return (
-    <select className="rounded border border-black/15 bg-white px-2 py-1 text-sm" value={value || ""}
+    <select className="rounded-xl border border-black/10 bg-white px-3 py-2 text-sm shadow-sm" value={value || ""}
             onChange={(e) => onChange(e.target.value)}>
       {seasons.map((s) => (
         <option key={s.id} value={s.id}>
@@ -145,7 +198,7 @@ export function ListenButton({ text }) {
   const { lang } = useApp();
   return (
     <button onClick={() => import("./speech.js").then((m) => m.speak(text, lang)).catch(() => {})}
-            className="rounded border border-black/10 px-2 py-0.5 text-xs">🔊 {t("listen", lang)}</button>
+            className="inline-flex items-center gap-1 rounded-full border border-black/10 bg-white px-2.5 py-1 text-xs hover:border-[var(--leaf)]"><Volume2 size={14} /> {t("listen", lang)}</button>
   );
 }
 
