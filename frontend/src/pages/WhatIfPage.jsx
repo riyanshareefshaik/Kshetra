@@ -80,12 +80,12 @@ function WhatIf() {
               </select>
             </label>
             <label className="block">{t("sowing", lang)}: <b>{sowing && dayLabel(sowing, lang)}</b>
-              <input type="range" className="mt-1 w-full accent-[var(--series-1)]" min={-30} max={windowDays + 30} step={1}
+              <input type="range" className="mt-1 w-full accent-[var(--brand)]" min={-30} max={windowDays + 30} step={1}
                      value={offset} onChange={(e) => setOffset(Number(e.target.value))} />
               <span className="text-xs text-[var(--text-muted)]">{v && t("wi.window", lang, { from: dayLabel(v.sowing_window_start, lang), to: dayLabel(v.sowing_window_end, lang) })}</span>
             </label>
             <label className="block">{t("wi.nitrogen", lang)}: <b className="tabular">{n} kg/ha</b> <span className="text-[var(--text-muted)]">({t("wi.bags", lang, { n: Math.round(n / 0.46 / 45 * 10) / 10 })})</span>
-              <input type="range" className="mt-1 w-full accent-[var(--series-1)]" min={0} max={300} step={5}
+              <input type="range" className="mt-1 w-full accent-[var(--brand)]" min={0} max={300} step={5}
                      value={n} onChange={(e) => setN(Number(e.target.value))} />
               <span className="text-xs text-[var(--text-muted)]">{t("wi.recommended", lang, { n: v?.recommended_n_kg_ha })}</span>
             </label>
@@ -94,7 +94,7 @@ function WhatIf() {
               <div className="mt-1 flex flex-wrap gap-1">
                 {IRRIGATION.map((k) => (
                   <button key={k} onClick={() => setIrrigation(k)}
-                          className={`rounded border px-2 py-1 ${irrigation === k ? "border-[var(--brand)] bg-[var(--brand)] text-white" : "border-[var(--line-strong)]"}`}>{t(`irr.${k}`, lang)}</button>
+                          className={`rounded-full border px-3.5 py-1.5 text-sm font-medium transition-colors ${irrigation === k ? "border-[var(--brand)] bg-[var(--brand)] text-white shadow-sm" : "border-[var(--line-strong)] bg-[var(--surface-1)] hover:bg-[var(--surface-2)]"}`}>{t(`irr.${k}`, lang)}</button>
                 ))}
               </div>
             </fieldset>

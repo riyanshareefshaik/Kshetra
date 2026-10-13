@@ -28,7 +28,7 @@ function Planner() {
         <span>{t("season", lang)}</span>
         {["", "kharif", "rabi", "zaid"].map((s) => (
           <button key={s} onClick={() => setSeason(s)}
-                  className={`rounded border px-2.5 py-1 ${season === s ? "border-[var(--brand)] bg-[var(--brand)] text-white" : "border-[var(--line-strong)] bg-[var(--surface-1)]"}`}>
+                  className={`rounded-full border px-3.5 py-1.5 text-sm font-medium transition-colors ${season === s ? "border-[var(--brand)] bg-[var(--brand)] text-white shadow-sm" : "border-[var(--line-strong)] bg-[var(--surface-1)] hover:bg-[var(--surface-2)]"}`}>
             {t(s || "next", lang)}
           </button>
         ))}

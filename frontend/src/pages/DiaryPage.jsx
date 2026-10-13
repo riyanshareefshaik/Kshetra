@@ -82,7 +82,7 @@ function Diary() {
                     placeholder={t("diary.ph", lang)} />
           <div className="flex flex-wrap items-center gap-2">
             <input type="date" className="rounded-lg border border-[var(--line-strong)] px-2 py-1" value={day} onChange={(e) => setDay(e.target.value)} />
-            <button type="button" onClick={mic} className={`rounded border px-3 py-1.5 ${listening ? "border-[var(--status-critical)] text-[var(--status-critical)]" : "border-[var(--line-strong)]"}`}>
+            <button type="button" onClick={mic} className={`rounded-lg border px-3 py-1.5 ${listening ? "border-[var(--status-critical)] text-[var(--status-critical)]" : "border-[var(--line-strong)]"}`}>
               🎤 {listening ? t("listening", lang) : t("speak", lang)}
             </button>
             <button disabled={busy || !text.trim()} onClick={() => save(null)} className="rounded-lg bg-[var(--brand)] px-3 py-1.5 text-white disabled:opacity-50">{t("save", lang)}</button>

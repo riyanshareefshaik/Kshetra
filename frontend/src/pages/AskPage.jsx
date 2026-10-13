@@ -96,7 +96,7 @@ function Ask() {
           <input className="min-w-0 flex-1 rounded-lg border border-[var(--line-strong)] px-3 py-2" value={question} lang={lang}
                  onChange={(e) => setQuestion(e.target.value)} placeholder={EXAMPLES[lang][0]} />
           <button type="button" onClick={mic} aria-pressed={listening}
-                  className={`rounded border px-3 py-2 ${listening ? "border-[var(--status-critical)] text-[var(--status-critical)]" : "border-[var(--line-strong)]"}`}>
+                  className={`rounded-lg border px-3 py-2 ${listening ? "border-[var(--status-critical)] text-[var(--status-critical)]" : "border-[var(--line-strong)]"}`}>
             🎤 {listening ? t("listening", lang) : t("speak", lang)}
           </button>
           <button disabled={busy} className="rounded-lg bg-[var(--brand)] px-4 py-2 text-white disabled:opacity-50">{t("send", lang)}</button>

@@ -76,7 +76,7 @@ function Timeline() {
       <div className="flex gap-1" role="group">
         {Object.keys(RANGES).map((k) => (
           <button key={k} onClick={() => setRange(k)}
-                  className={`rounded border px-2.5 py-1 text-sm ${range === k ? "border-[var(--brand)] bg-[var(--brand)] text-white" : "border-[var(--line-strong)] bg-[var(--surface-1)]"}`}>
+                  className={`rounded-full border px-3.5 py-1.5 text-sm font-medium transition-colors ${range === k ? "border-[var(--brand)] bg-[var(--brand)] text-white shadow-sm" : "border-[var(--line-strong)] bg-[var(--surface-1)] hover:bg-[var(--surface-2)]"}`}>
             {t(k, lang)}
           </button>
         ))}

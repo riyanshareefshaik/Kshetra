@@ -52,7 +52,7 @@ export default function GroupPage() {
           <div className="flex flex-wrap gap-1">
             {groups.map((x) => (
               <button key={x.id} onClick={() => setGid(x.id)}
-                      className={`rounded border px-2.5 py-1 text-sm ${x.id === gid ? "border-[var(--brand)] bg-[var(--brand)] text-white" : "border-[var(--line-strong)] bg-[var(--surface-1)]"}`}>{x.name}</button>
+                      className={`rounded-full border px-3.5 py-1.5 text-sm font-medium transition-colors ${x.id === gid ? "border-[var(--brand)] bg-[var(--brand)] text-white shadow-sm" : "border-[var(--line-strong)] bg-[var(--surface-1)] hover:bg-[var(--surface-2)]"}`}>{x.name}</button>
             ))}
           </div>
           {g && (
