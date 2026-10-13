@@ -446,6 +446,10 @@ const T = {
   "start.3": ["Get daily advice, yield reasons and next-season plans", "రోజువారీ సలహా, దిగుబడి కారణాలు, తదుపరి ప్రణాళిక పొందండి", "रोज़ की सलाह, उपज के कारण और अगली योजना पाएँ"],
   "start.go": ["Use the tools on the left of the map to begin", "ప్రారంభించడానికి మ్యాప్ ఎడమ వైపు సాధనాలు వాడండి", "शुरू करने के लिए नक्शे के बाईं ओर के औज़ार इस्तेमाल करें"],
   "start.pick": ["Pick a field to see today's plan", "ఈరోజు ప్రణాళిక చూడటానికి పొలం ఎంచుకోండి", "आज की योजना देखने के लिए खेत चुनें"],
+  "theme": ["Theme", "థీమ్", "थीम"],
+  "theme.system": ["Same as phone", "ఫోన్ లాగే", "फ़ोन जैसा"],
+  "theme.light": ["Day", "పగలు", "दिन"],
+  "theme.dark": ["Night", "రాత్రి", "रात"],
   "start.add": ["Add a field", "పొలం జోడించండి", "खेत जोड़ें"],
 
   // login & voice

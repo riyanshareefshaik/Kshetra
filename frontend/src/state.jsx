@@ -2,6 +2,29 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState } 
 import { useSearchParams } from "react-router-dom";
 import { api } from "./api.js";
 import { authEnabled, supabase } from "./auth.js";
+import { setChartTheme } from "./components/tokens.jsx";
+
+const darkQuery = typeof window !== "undefined" && window.matchMedia ? window.matchMedia("(prefers-color-scheme: dark)") : null;
+
+// "system" follows the phone or computer setting; "light" / "dark" are the farmer's own choice.
+function useTheme() {
+  const [theme, setThemeState] = useState(() => stored("kshetra.theme", "system"));
+  const [systemDark, setSystemDark] = useState(() => Boolean(darkQuery?.matches));
+  useEffect(() => {
+    if (!darkQuery) return undefined;
+    const on = (e) => setSystemDark(e.matches);
+    darkQuery.addEventListener("change", on);
+    return () => darkQuery.removeEventListener("change", on);
+  }, []);
+  const resolved = theme === "system" ? (systemDark ? "dark" : "light") : theme;
+  setChartTheme(resolved);   // before children render, so charts pick up the right colours
+  useEffect(() => {
+    document.documentElement.dataset.theme = resolved;
+    document.querySelector('meta[name="theme-color"]')?.setAttribute("content", resolved === "dark" ? "#0c2a15" : "#1b5e20");
+  }, [resolved]);
+  const setTheme = useCallback((v) => { store("kshetra.theme", v); setThemeState(v); }, []);
+  return { theme, resolvedTheme: resolved, setTheme };
+}
 
 const AppContext = createContext(null);
 
@@ -30,6 +53,7 @@ export function AppProvider({ children }) {
   const [session, setSession] = useState(authEnabled ? undefined : null);   // undefined = still checking
   const [error, setError] = useState(null);
   const [online, setOnline] = useState(() => navigator.onLine);
+  const { theme, resolvedTheme, setTheme } = useTheme();
   const fieldId = params.get("field") || stored("kshetra.field", null);
   const signedIn = !authEnabled || Boolean(session);
 
@@ -83,8 +107,9 @@ export function AppProvider({ children }) {
   const field = fields.find((f) => f.id === fieldId) || null;
   const value = useMemo(() => ({
     fields, field, fieldId: field ? fieldId : null, selectField, reloadFields, lang, setLang, user, setUser,
-    error, online, session, signedIn,
-  }), [fields, field, fieldId, selectField, reloadFields, lang, setLang, user, error, online, session, signedIn]);
+    error, online, session, signedIn, theme, resolvedTheme, setTheme,
+  }), [fields, field, fieldId, selectField, reloadFields, lang, setLang, user, error, online, session, signedIn,
+       theme, resolvedTheme, setTheme]);
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 }
 

@@ -1,6 +1,6 @@
 import { lazy, Suspense, useEffect, useState } from "react";
 import { NavLink, Route, Routes, useLocation, useNavigate } from "react-router-dom";
-import { Download, Ellipsis, LogOut, Mic, Sprout, WifiOff, X } from "lucide-react";
+import { Download, Ellipsis, LogOut, Mic, Monitor, Moon, Sprout, Sun, WifiOff, X } from "lucide-react";
 import { authEnabled, signOut } from "./auth.js";
 import { LANGS, t } from "./i18n.js";
 import { ALL_PAGES, NAV, TABS } from "./nav.js";
@@ -65,7 +65,7 @@ function useInstallPrompt() {
 
 function Brand({ light = false }) {
   return (
-    <span className={`font-display flex items-center gap-1.5 text-xl font-bold ${light ? "text-white" : "text-[var(--brand)]"}`}>
+    <span className={`font-display flex items-center gap-1.5 text-xl font-bold ${light ? "text-white" : "text-[var(--brand-ink)]"}`}>
       <span className={`grid h-8 w-8 place-items-center rounded-xl ${light ? "bg-white/15" : "bg-[var(--leaf-50)]"}`}>
         <Sprout size={20} strokeWidth={2.2} />
       </span>
@@ -74,17 +74,31 @@ function Brand({ light = false }) {
   );
 }
 
-function Controls({ light }) {
+const THEMES = [["system", Monitor], ["light", Sun], ["dark", Moon]];
+
+function ThemeButton({ className }) {
+  const { theme, setTheme, lang } = useApp();
+  const i = Math.max(0, THEMES.findIndex(([k]) => k === theme));
+  const [, Icon] = THEMES[i];
+  const next = THEMES[(i + 1) % THEMES.length][0];
+  const label = `${t("theme", lang)}: ${t(`theme.${theme}`, lang)}`;
+  return (
+    <button onClick={() => setTheme(next)} title={label} aria-label={label}
+            className={`h-9 w-9 place-items-center rounded-xl border ${className}`}><Icon size={17} /></button>
+  );
+}
+
+function Controls() {
   const { fields, fieldId, selectField, lang, setLang } = useApp();
   const voice = useVoiceNav();
   const install = useInstallPrompt();
-  const base = light ? "border-white/25 bg-white/10 text-white" : "border-black/10 bg-white";
+  const base = "border-white/25 bg-white/10 text-white hover:bg-white/20";
   return (
     <>
       <select aria-label={t("chooseField", lang)} className={`min-w-0 max-w-[11rem] rounded-xl border px-2.5 py-1.5 text-sm ${base}`}
               value={fieldId || ""} onChange={(e) => selectField(e.target.value || null)}>
-        <option value="" className="text-black">{t("chooseField", lang)}</option>
-        {fields.map((f) => <option key={f.id} value={f.id} className="text-black">{f.name || `Field ${f.id.slice(0, 4)}`}</option>)}
+        <option value="" className="bg-[var(--surface-1)] text-[var(--text-primary)]">{t("chooseField", lang)}</option>
+        {fields.map((f) => <option key={f.id} value={f.id} className="bg-[var(--surface-1)] text-[var(--text-primary)]">{f.name || `Field ${f.id.slice(0, 4)}`}</option>)}
       </select>
       <div className="ml-auto flex items-center gap-1.5">
         {install && (
@@ -98,8 +112,9 @@ function Controls({ light }) {
             <Mic size={18} />
           </button>
         )}
+        <ThemeButton className={`hidden sm:grid ${base}`} />
         <select aria-label="Language" className={`rounded-xl border px-2 py-1.5 text-sm ${base}`} value={lang} onChange={(e) => setLang(e.target.value)}>
-          {Object.entries(LANGS).map(([k, v]) => <option key={k} value={k} className="text-black">{v}</option>)}
+          {Object.entries(LANGS).map(([k, v]) => <option key={k} value={k} className="bg-[var(--surface-1)] text-[var(--text-primary)]">{v}</option>)}
         </select>
         {authEnabled && (
           <button onClick={() => signOut()} title={t("signOut", lang)} aria-label={t("signOut", lang)}
@@ -114,7 +129,7 @@ function Sidebar() {
   const { lang } = useApp();
   const { search } = useLocation();
   return (
-    <aside className="hidden w-60 shrink-0 flex-col border-r border-black/5 bg-white/80 backdrop-blur lg:flex">
+    <aside className="hidden w-60 shrink-0 flex-col border-r border-[var(--line-soft)] bg-[var(--surface-1)]/80 backdrop-blur lg:flex">
       <div className="px-5 py-4"><Brand /></div>
       <nav className="flex-1 space-y-4 overflow-y-auto px-3 pb-6">
         {NAV.map((g) => (
@@ -122,7 +137,7 @@ function Sidebar() {
             <div className="px-2 pb-1 text-[11px] font-semibold uppercase tracking-wide text-[var(--text-muted)]">{t(g.group, lang)}</div>
             {g.items.map((p) => (
               <NavLink key={p.path} to={{ pathname: p.path, search }} end
-                       className={({ isActive }) => `flex items-center gap-2.5 rounded-xl px-2.5 py-2 text-sm transition-colors ${isActive ? "bg-[var(--leaf-50)] font-semibold text-[var(--brand)]" : "text-[var(--text-secondary)] hover:bg-black/[0.03]"}`}>
+                       className={({ isActive }) => `flex items-center gap-2.5 rounded-xl px-2.5 py-2 text-sm transition-colors ${isActive ? "bg-[var(--leaf-50)] font-semibold text-[var(--brand-ink)]" : "text-[var(--text-secondary)] hover:bg-[var(--hover)]"}`}>
                 <p.icon size={18} strokeWidth={2} /> {t(p.key, lang)}
               </NavLink>
             ))}
@@ -139,21 +154,38 @@ function TabBar({ onMore }) {
   const tabs = TABS.map((p) => ALL_PAGES.find((x) => x.path === p));
   const inMore = !TABS.includes(pathname);
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-[1000] grid grid-cols-5 border-t border-black/10 bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur lg:hidden">
+    <nav className="fixed inset-x-0 bottom-0 z-[1000] grid grid-cols-5 border-t border-[var(--line)] bg-[var(--surface-1)]/95 pb-[env(safe-area-inset-bottom)] backdrop-blur lg:hidden">
       {tabs.map((p) => (
         <NavLink key={p.path} to={{ pathname: p.path, search }} end
-                 className={({ isActive }) => `flex flex-col items-center gap-0.5 py-2 text-[11px] ${isActive ? "font-semibold text-[var(--brand)]" : "text-[var(--text-secondary)]"}`}>
+                 className={({ isActive }) => `flex flex-col items-center gap-0.5 py-2 text-[11px] ${isActive ? "font-semibold text-[var(--brand-ink)]" : "text-[var(--text-secondary)]"}`}>
           {({ isActive }) => (<>
             <span className={`grid h-7 w-12 place-items-center rounded-full transition-colors ${isActive ? "bg-[var(--leaf-100)]" : ""}`}><p.icon size={19} /></span>
             <span className="max-w-full truncate px-1">{t(p.key, lang)}</span>
           </>)}
         </NavLink>
       ))}
-      <button onClick={onMore} className={`flex flex-col items-center gap-0.5 py-2 text-[11px] ${inMore ? "font-semibold text-[var(--brand)]" : "text-[var(--text-secondary)]"}`}>
+      <button onClick={onMore} className={`flex flex-col items-center gap-0.5 py-2 text-[11px] ${inMore ? "font-semibold text-[var(--brand-ink)]" : "text-[var(--text-secondary)]"}`}>
         <span className={`grid h-7 w-12 place-items-center rounded-full ${inMore ? "bg-[var(--leaf-100)]" : ""}`}><Ellipsis size={19} /></span>
         {t("nav.more", lang)}
       </button>
     </nav>
+  );
+}
+
+function ThemePicker() {
+  const { theme, setTheme, lang } = useApp();
+  return (
+    <div className="mt-4">
+      <div className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">{t("theme", lang)}</div>
+      <div className="k-card grid grid-cols-3 gap-1 p-1" role="radiogroup" aria-label={t("theme", lang)}>
+        {THEMES.map(([k, Icon]) => (
+          <button key={k} role="radio" aria-checked={theme === k} onClick={() => setTheme(k)}
+                  className={`flex items-center justify-center gap-1.5 rounded-xl px-2 py-2 text-xs ${theme === k ? "bg-[var(--brand)] font-semibold text-white" : "text-[var(--text-secondary)]"}`}>
+            <Icon size={15} />{t(`theme.${k}`, lang)}
+          </button>
+        ))}
+      </div>
+    </div>
   );
 }
 
@@ -165,7 +197,7 @@ function MoreSheet({ open, onClose }) {
     <div className="fixed inset-0 z-[1100] lg:hidden" role="dialog" aria-modal="true">
       <button className="absolute inset-0 bg-black/30" aria-label="Close" onClick={onClose} />
       <div className="k-rise absolute inset-x-0 bottom-0 max-h-[80vh] overflow-y-auto rounded-t-3xl bg-[var(--page)] p-4 pb-[calc(1rem+env(safe-area-inset-bottom))]">
-        <div className="mb-2 flex items-center justify-between"><Brand /><button onClick={onClose} aria-label="Close" className="grid h-9 w-9 place-items-center rounded-xl bg-white"><X size={18} /></button></div>
+        <div className="mb-2 flex items-center justify-between"><Brand /><button onClick={onClose} aria-label="Close" className="grid h-9 w-9 place-items-center rounded-xl bg-[var(--surface-1)]"><X size={18} /></button></div>
         {NAV.map((g) => (
           <div key={g.group} className="mt-3">
             <div className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">{t(g.group, lang)}</div>
@@ -173,13 +205,14 @@ function MoreSheet({ open, onClose }) {
               {g.items.map((p) => (
                 <NavLink key={p.path} to={{ pathname: p.path, search }} end onClick={onClose}
                          className={({ isActive }) => `k-card flex flex-col items-center gap-1 px-1 py-3 text-center text-xs ${isActive ? "ring-2 ring-[var(--leaf)]" : ""}`}>
-                  <span className="grid h-9 w-9 place-items-center rounded-xl bg-[var(--leaf-50)] text-[var(--brand)]"><p.icon size={19} /></span>
+                  <span className="grid h-9 w-9 place-items-center rounded-xl bg-[var(--leaf-50)] text-[var(--brand-ink)]"><p.icon size={19} /></span>
                   {t(p.key, lang)}
                 </NavLink>
               ))}
             </div>
           </div>
         ))}
+        <ThemePicker />
       </div>
     </div>
   );
@@ -196,15 +229,14 @@ export default function App() {
     <div className="flex h-full">
       <Sidebar />
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="k-header text-white lg:bg-none lg:text-inherit">
-          <div className="flex items-center gap-2 px-4 py-2.5 lg:border-b lg:border-black/5 lg:bg-white/70 lg:backdrop-blur">
+        <header className="k-header text-white">
+          <div className="flex items-center gap-2 px-4 py-2.5">
             <span className="lg:hidden"><Brand light /></span>
-            <div className="hidden min-w-0 flex-1 items-center gap-2 lg:flex"><Controls /></div>
-            <div className="flex min-w-0 flex-1 items-center gap-2 lg:hidden"><Controls light /></div>
+            <div className="flex min-w-0 flex-1 items-center gap-2"><Controls /></div>
           </div>
         </header>
-        {!online && <div className="flex items-center gap-2 bg-amber-50 px-4 py-1.5 text-sm text-amber-900"><WifiOff size={15} />{t("offline", lang)}</div>}
-        {error && online && <div className="bg-red-50 px-4 py-2 text-sm text-red-900">{t(error, lang)}</div>}
+        {!online && <div className="flex items-center gap-2 bg-[var(--gold-50)] px-4 py-1.5 text-sm text-[var(--gold-ink)]"><WifiOff size={15} />{t("offline", lang)}</div>}
+        {error && online && <div className="bg-[var(--red-50)] px-4 py-2 text-sm text-[var(--red-ink)]">{t(error, lang)}</div>}
         <main className="k-safe-bottom min-h-0 flex-1 overflow-y-auto">
           <Suspense fallback={<div className="p-4"><Loading /></div>}>
             <Routes>

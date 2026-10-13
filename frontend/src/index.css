@@ -5,10 +5,11 @@
 :root {
   color-scheme: light;
   --surface-1: #ffffff;
+  --surface-2: #faf8f2;
   --page: #f6f3ea;
   --text-primary: #1d2b1f;
   --text-secondary: #4f5a4f;
-  --text-muted: #858b80;
+  --text-muted: #7d8378;
   --grid: #e5e2d6;
   --axis: #c9c5b5;
   --series-1: #2a78d6;
@@ -21,22 +22,78 @@
 
   --brand: #1b5e20;
   --brand-900: #0f3d1e;
+  --brand-ink: #1b5e20;      /* brand colour used as text */
   --leaf: #2e7d32;
   --leaf-50: #ecf6ea;
   --leaf-100: #d6ecd2;
   --gold: #e9a823;
   --gold-50: #fdf4dd;
+  --gold-ink: #7a5304;
   --soil: #7a5a43;
   --soil-50: #f4ece4;
   --sky: #3b82c4;
   --sky-50: #e6f0fa;
+  --red-50: #fdf0ef;
+  --red-ink: #8f1d1d;
+  --red-line: #f0a8a8;
+
+  --line-soft: rgba(29, 43, 31, 0.05);
+  --line: rgba(29, 43, 31, 0.10);
+  --line-strong: rgba(29, 43, 31, 0.17);
+  --hover: rgba(29, 43, 31, 0.04);
+  --shadow: 0 1px 2px rgba(29, 43, 31, 0.04), 0 4px 16px -8px rgba(29, 43, 31, 0.12);
+  --skel-a: #ece8dc;
+  --skel-b: #f7f4ec;
+  --furrow: rgba(122, 90, 67, 0.035);
+}
+
+/* Night field: same hues, stepped for a dark surface (chart series validated on --surface-1). */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --surface-1: #18201a;
+  --surface-2: #1d261f;
+  --page: #0e1410;
+  --text-primary: #ecf0e8;
+  --text-secondary: #c0c7bb;
+  --text-muted: #8e968b;
+  --grid: #2a332c;
+  --axis: #3c463d;
+  --series-1: #3987e5;
+  --series-2: #d95926;
+  --band: #222b24;
+
+  --brand: #2e7d32;
+  --brand-900: #0c2a15;
+  --brand-ink: #8fd18f;
+  --leaf: #43a047;
+  --leaf-50: #1c2d20;
+  --leaf-100: #24402b;
+  --gold: #e9a823;
+  --gold-50: #33290f;
+  --gold-ink: #f2c25a;
+  --soil: #c9a083;
+  --soil-50: #2c231c;
+  --sky: #6aa8e0;
+  --sky-50: #16273a;
+  --red-50: #3a1a1a;
+  --red-ink: #f2a3a3;
+  --red-line: #7a3434;
+
+  --line-soft: rgba(255, 255, 255, 0.05);
+  --line: rgba(255, 255, 255, 0.10);
+  --line-strong: rgba(255, 255, 255, 0.18);
+  --hover: rgba(255, 255, 255, 0.05);
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 6px 18px -10px rgba(0, 0, 0, 0.6);
+  --skel-a: #1f2821;
+  --skel-b: #2a352c;
+  --furrow: rgba(255, 255, 255, 0.018);
 }
 
 html, body, #root { height: 100%; }
 body {
   background-color: var(--page);
   /* faint furrows, like a ploughed field seen from above */
-  background-image: repeating-linear-gradient(-28deg, rgba(122, 90, 67, 0.035) 0 2px, transparent 2px 22px);
+  background-image: repeating-linear-gradient(-28deg, var(--furrow) 0 2px, transparent 2px 22px);
   color: var(--text-primary);
   font-family: system-ui, -apple-system, "Segoe UI", "Noto Sans", "Noto Sans Telugu", "Noto Sans Devanagari", sans-serif;
   -webkit-tap-highlight-color: transparent;
@@ -45,6 +102,25 @@ h1, h2, h3, .font-display {
   font-family: "Baloo 2", "Baloo Tammudu 2", system-ui, sans-serif;
   letter-spacing: -0.005em;
 }
+/* Form controls follow the theme on every page */
+@layer base {
+  input:not([type="range"]):not([type="checkbox"]):not([type="radio"]), select, textarea {
+    background-color: var(--surface-1);
+    color: var(--text-primary);
+    border-color: var(--line-strong);
+  }
+  input:focus-visible, select:focus-visible, textarea:focus-visible, button:focus-visible, a:focus-visible {
+    outline: 2px solid var(--leaf);
+    outline-offset: 1px;
+  }
+  input[type="range"], input[type="checkbox"], input[type="radio"] { accent-color: var(--leaf); }
+  ::placeholder { color: var(--text-muted); }
+  table th { color: var(--text-secondary); }
+}
+/* Images and drawings sit a little softer at night */
+:root[data-theme="dark"] .k-art { filter: brightness(0.85) saturate(0.9); }
+:root[data-theme="dark"] .leaflet-container { background: #1d261f; }
+
 .tabular { font-variant-numeric: tabular-nums; }
 
 /* Header: deep green with a hint of crop rows */
@@ -57,9 +133,9 @@ h1, h2, h3, .font-display {
 
 .k-card {
   background: var(--surface-1);
-  border: 1px solid rgba(29, 43, 31, 0.07);
+  border: 1px solid var(--line);
   border-radius: 1rem;
-  box-shadow: 0 1px 2px rgba(29, 43, 31, 0.04), 0 4px 16px -8px rgba(29, 43, 31, 0.12);
+  box-shadow: var(--shadow);
 }
 
 .k-hero {
@@ -73,7 +149,7 @@ h1, h2, h3, .font-display {
 
 /* Loading placeholder */
 .k-skeleton {
-  background: linear-gradient(90deg, #ece8dc 0%, #f7f4ec 50%, #ece8dc 100%);
+  background: linear-gradient(90deg, var(--skel-a) 0%, var(--skel-b) 50%, var(--skel-a) 100%);
   background-size: 200% 100%;
   animation: k-shimmer 1.2s ease-in-out infinite;
   border-radius: 0.75rem;

@@ -68,7 +68,7 @@ export function WeatherIcon({ day, size = 28, className = "" }) {
 /** Rolling fields under a rising sun, for welcome and empty screens. */
 export function FieldScene({ className = "" }) {
   return (
-    <svg viewBox="0 0 320 140" className={className} aria-hidden>
+    <svg viewBox="0 0 320 140" className={`k-art ${className}`} aria-hidden>
       <defs>
         <linearGradient id="ks-sky" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stopColor="#fdf4dd" /><stop offset="1" stopColor="#ecf6ea" /></linearGradient>
       </defs>
