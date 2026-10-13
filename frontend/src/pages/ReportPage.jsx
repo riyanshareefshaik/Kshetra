@@ -46,7 +46,7 @@ function Report() {
       <Card title={t("rep.field", lang)}>
         <p className="text-sm text-[var(--text-secondary)]">{t("rep.desc", lang)}</p>
         <button disabled={busy} onClick={() => download(() => api.report(fieldId), `kshetra-${slug}-report.pdf`)}
-                className="mt-3 rounded bg-[var(--brand)] px-4 py-2 text-white disabled:opacity-50">
+                className="mt-3 rounded-lg bg-[var(--brand)] px-4 py-2 text-white disabled:opacity-50">
           {busy ? t("loading", lang) : t("rep.download", lang)}
         </button>
       </Card>
@@ -66,7 +66,7 @@ function Report() {
                 <span className={c.open ? "text-[var(--status-critical)]" : "text-[var(--text-muted)]"}>
                   {c.open ? t("rep.hoursLeft", lang, { n: c.hours_left }) : t("rep.passed", lang)}
                 </span>
-                <button disabled={busy} className="ml-auto rounded border border-black/15 px-2 py-1"
+                <button disabled={busy} className="ml-auto rounded-lg border border-[var(--line-strong)] px-2 py-1"
                         onClick={() => download(() => api.claimPdf(fieldId, c.id), `pmfby-evidence-${c.start_date}.pdf`)}>
                   {t("rep.evidence", lang)}
                 </button>

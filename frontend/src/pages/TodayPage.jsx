@@ -134,7 +134,7 @@ function Today() {
           </div>
           {now && (
             <div className="flex items-center gap-3 rounded-2xl bg-white/12 px-4 py-3 backdrop-blur-sm" style={{ background: "rgba(255,255,255,0.12)" }}>
-              <span className="grid h-14 w-14 place-items-center rounded-2xl bg-white"><WeatherIcon day={now} size={34} /></span>
+              <span className="grid h-14 w-14 place-items-center rounded-2xl bg-[var(--surface-1)]"><WeatherIcon day={now} size={34} /></span>
               <div>
                 <div className="font-display text-3xl font-bold leading-none">{Math.round(now.tmax)}°<span className="text-lg font-medium text-white/70"> / {Math.round(now.tmin)}°</span></div>
                 <div className="mt-1 text-sm text-white/85">{now.rain_mm >= 1 ? `${Math.round(now.rain_mm)} mm` : t("home.rainChance", lang, { p: Math.round(now.rain_prob ?? 0) })}</div>
@@ -144,7 +144,7 @@ function Today() {
         </div>
 
         {crop ? (
-          <div className="mt-5 rounded-2xl bg-white/95 p-4 text-[var(--text-primary)]">
+          <div className="mt-5 rounded-2xl bg-[var(--surface-1)]/95 p-4 text-[var(--text-primary)]">
             <div className="flex flex-wrap items-center gap-3">
               <span className="grid h-12 w-12 place-items-center rounded-2xl bg-[var(--leaf-50)]"><CropIcon crop={crop.crop} size={34} /></span>
               <div className="min-w-0 flex-1">
@@ -154,7 +154,7 @@ function Today() {
                   {ir?.stage ? ` · ${t(`stage.${ir.stage}`, lang)}` : ""}
                 </div>
               </div>
-              <button onClick={() => setEditing((v) => !v)} aria-label={t("today.whatGrowing", lang)} className="inline-flex items-center gap-1 rounded-full border border-black/10 p-2 text-xs sm:px-3 sm:py-1"><Pencil size={13} /><span className="hidden sm:inline">{t("today.whatGrowing", lang)}</span></button>
+              <button onClick={() => setEditing((v) => !v)} aria-label={t("today.whatGrowing", lang)} className="inline-flex items-center gap-1 rounded-full border border-[var(--line)] p-2 text-xs sm:px-3 sm:py-1"><Pencil size={13} /><span className="hidden sm:inline">{t("today.whatGrowing", lang)}</span></button>
             </div>
             {progress != null && (
               <div className="mt-3">
@@ -174,17 +174,17 @@ function Today() {
           </button>
         )}
         {editing && (
-          <form onSubmit={saveCrop} className="k-rise mt-3 flex flex-wrap items-end gap-2 rounded-2xl bg-white p-3 text-sm text-[var(--text-primary)]">
+          <form onSubmit={saveCrop} className="k-rise mt-3 flex flex-wrap items-end gap-2 rounded-2xl bg-[var(--surface-1)] p-3 text-sm text-[var(--text-primary)]">
             <div className="flex flex-wrap gap-1.5">
               {CROPS.map((c) => (
                 <button type="button" key={c} onClick={() => setForm({ ...form, crop: c })}
-                        className={`flex items-center gap-1 rounded-xl border px-2 py-1 ${form.crop === c ? "border-[var(--leaf)] bg-[var(--leaf-50)]" : "border-black/10"}`}>
+                        className={`flex items-center gap-1 rounded-xl border px-2 py-1 ${form.crop === c ? "border-[var(--leaf)] bg-[var(--leaf-50)]" : "border-[var(--line)]"}`}>
                   <CropIcon crop={c} size={20} />{cropName(c, lang).split(" (")[0]}
                 </button>
               ))}
             </div>
             <label className="text-xs">{t("today.sownOn", lang)}
-              <input type="date" required className="mt-1 block rounded-xl border border-black/15 px-2 py-1.5 text-sm" value={form.sowing_date}
+              <input type="date" required className="mt-1 block rounded-xl border border-[var(--line-strong)] px-2 py-1.5 text-sm" value={form.sowing_date}
                      onChange={(e) => setForm({ ...form, sowing_date: e.target.value })} />
             </label>
             <button className="rounded-xl bg-[var(--brand)] px-4 py-2 text-white">{t("today.set", lang)}</button>
@@ -195,7 +195,7 @@ function Today() {
       <div className="grid gap-4 lg:grid-cols-5">
         {/* To do today */}
         <Card title={t("home.todo", lang)} icon={CircleCheck} className="lg:col-span-3"
-              actions={<div className="flex items-center gap-2">{tasks.length > 0 && <span className="rounded-full bg-[var(--leaf-50)] px-2.5 py-0.5 text-xs font-semibold text-[var(--brand)]">{doneCount}/{tasks.length}</span>}<ListenButton text={readAloud} /></div>}>
+              actions={<div className="flex items-center gap-2">{tasks.length > 0 && <span className="rounded-full bg-[var(--leaf-50)] px-2.5 py-0.5 text-xs font-semibold text-[var(--brand-ink)]">{doneCount}/{tasks.length}</span>}<ListenButton text={readAloud} /></div>}>
           {tasks.length === 0 ? (
             <p className="text-sm text-[var(--text-secondary)]">{t("home.nothing", lang)}</p>
           ) : (
@@ -205,18 +205,18 @@ function Today() {
                 return (
                   <li key={task.id}>
                     <button onClick={() => toggle(task.id)}
-                            className={`flex w-full items-center gap-3 rounded-xl border px-3 py-2.5 text-left transition-colors ${isDone ? "border-[var(--leaf-100)] bg-[var(--leaf-50)]" : "border-black/10 bg-white hover:border-[var(--leaf)]"}`}>
+                            className={`flex w-full items-center gap-3 rounded-xl border px-3 py-2.5 text-left transition-colors ${isDone ? "border-[var(--leaf-100)] bg-[var(--leaf-50)]" : "border-[var(--line)] bg-[var(--surface-1)] hover:border-[var(--leaf)]"}`}>
                       {isDone ? <CircleCheck key="d" size={22} className="k-pop shrink-0 text-[var(--leaf)]" /> : <Circle size={22} className="shrink-0 text-[var(--text-muted)]" />}
                       <task.icon size={18} className="shrink-0 text-[var(--text-secondary)]" />
                       <span className={`text-sm ${isDone ? "text-[var(--text-muted)] line-through" : ""}`}>{task.text}</span>
-                      {task.link && <Link to={task.link} onClick={(e) => e.stopPropagation()} className="ml-auto text-xs text-[var(--sky)] underline">{t("nav.diary", lang)}</Link>}
+                      {task.link && <Link to={task.link} onClick={(e) => e.stopPropagation()} className="ml-auto text-xs font-semibold text-[var(--brand-ink)] underline">{t("nav.diary", lang)}</Link>}
                     </button>
                   </li>
                 );
               })}
             </ul>
           )}
-          {tasks.length > 0 && doneCount === tasks.length && <p className="k-rise mt-3 text-sm font-medium text-[var(--brand)]">🌾 {t("home.allDone", lang)}</p>}
+          {tasks.length > 0 && doneCount === tasks.length && <p className="k-rise mt-3 text-sm font-medium text-[var(--brand-ink)]">🌾 {t("home.allDone", lang)}</p>}
         </Card>
 
         {/* Crop health from space */}
@@ -226,7 +226,7 @@ function Today() {
           ) : (
             <div>
               <p className="font-display text-lg font-semibold leading-snug">{t(`home.health.${health.verdict}`, lang)}</p>
-              <div className="relative mt-4 h-3 rounded-full bg-gradient-to-r from-[#d9c9a8] via-[#b7dbb0] to-[var(--leaf)]">
+              <div className="relative mt-4 h-3 rounded-full bg-gradient-to-r from-[var(--soil-50)] via-[var(--leaf-100)] to-[var(--leaf)]">
                 <span className="absolute -top-1 h-5 w-0.5 bg-[var(--text-primary)]/60" style={{ left: `${health.usual * 100}%` }} />
                 <span className="absolute -top-1.5 h-6 w-6 -translate-x-1/2 rounded-full border-[3px] border-white bg-[var(--brand)] shadow" style={{ left: `${health.now * 100}%` }} />
               </div>
@@ -243,7 +243,7 @@ function Today() {
       <Card title={t("home.week", lang)} icon={Sun} tone="gold">
         <div className="-mx-1 flex snap-x gap-2 overflow-x-auto px-1 pb-1">
           {future.map((d, i) => (
-            <div key={d.date} className={`min-w-[5.2rem] flex-1 snap-start rounded-2xl border p-2.5 text-center ${i === 0 ? "border-[var(--leaf)] bg-[var(--leaf-50)]" : "border-black/5 bg-[var(--page)]"}`}>
+            <div key={d.date} className={`min-w-[5.2rem] flex-1 snap-start rounded-2xl border p-2.5 text-center ${i === 0 ? "border-[var(--leaf)] bg-[var(--leaf-50)]" : "border-[var(--line-soft)] bg-[var(--page)]"}`}>
               <div className="text-xs font-medium text-[var(--text-secondary)]">{i === 0 ? t("home.todayWeather", lang) : fmtDate(d.date, lang, { weekday: "short" })}</div>
               <div className="my-1.5 flex justify-center"><WeatherIcon day={d} size={28} /></div>
               <div className="tabular text-sm font-semibold">{Math.round(d.tmax)}° <span className="font-normal text-[var(--text-muted)]">{Math.round(d.tmin)}°</span></div>
@@ -283,10 +283,10 @@ function Today() {
           {data.pests.length === 0 ? <p className="text-sm text-[var(--text-secondary)]">{t("today.noPests", lang)}</p> : (
             <ul className="space-y-2">
               {data.pests.map((p) => (
-                <li key={p.pest} className="rounded-xl border border-black/5 bg-[var(--page)] p-2.5 text-sm">
+                <li key={p.pest} className="rounded-xl border border-[var(--line-soft)] bg-[var(--page)] p-2.5 text-sm">
                   <div className="flex items-center gap-2">
                     <LevelIcon level={p.level} /><b>{pestName(p, lang)}</b>
-                    <span className={`ml-auto rounded-full px-2 py-0.5 text-xs font-semibold ${p.level === "high" ? "bg-red-50 text-[var(--status-critical)]" : p.level === "medium" ? "bg-[var(--gold-50)] text-[#9a6a06]" : "bg-[var(--leaf-50)] text-[var(--brand)]"}`}>{t(p.level, lang)}</span>
+                    <span className={`ml-auto rounded-full px-2 py-0.5 text-xs font-semibold ${p.level === "high" ? "bg-[var(--red-50)] text-[var(--status-critical)]" : p.level === "medium" ? "bg-[var(--gold-50)] text-[var(--gold-ink)]" : "bg-[var(--leaf-50)] text-[var(--brand-ink)]"}`}>{t(p.level, lang)}</span>
                   </div>
                   <p className="mt-1 pl-5 text-[var(--text-secondary)]">{pestWhy(p, lang)}</p>
                 </li>

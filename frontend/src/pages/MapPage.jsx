@@ -103,29 +103,29 @@ export default function MapPage() {
         <FlyTo field={field} />
       </MapContainer>
 
-      <aside className="w-full space-y-4 overflow-y-auto border-t border-black/10 bg-[var(--page)] p-4 text-sm md:w-96 md:border-l md:border-t-0">
+      <aside className="w-full space-y-4 overflow-y-auto border-t border-[var(--line)] bg-[var(--page)] p-4 text-sm md:w-96 md:border-l md:border-t-0">
         <ErrorBox error={error} />
         {draft ? (
           <div className="k-card k-rise space-y-3 p-4">
             <h2 className="flex items-center gap-2 text-lg font-bold"><IconBadge icon={PenLine} />{t("map.new", lang)}</h2>
             {draft.boundary_source === "pin_buffer" && <p className="text-[var(--text-secondary)]">{t("bnd.pin", lang)}</p>}
             <label className="block">{t("map.name", lang)}
-              <input className="mt-1 w-full rounded-xl border border-black/15 bg-white px-3 py-2" value={form.name}
+              <input className="mt-1 w-full rounded-xl border border-[var(--line-strong)] bg-[var(--surface-1)] px-3 py-2" value={form.name}
                      onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder={t("map.namePh", lang)} />
             </label>
             <label className="block">{t("map.irrigation", lang)}
-              <select className="mt-1 w-full rounded-xl border border-black/15 bg-white px-3 py-2" value={form.irrigation_type}
+              <select className="mt-1 w-full rounded-xl border border-[var(--line-strong)] bg-[var(--surface-1)] px-3 py-2" value={form.irrigation_type}
                       onChange={(e) => setForm({ ...form, irrigation_type: e.target.value })}>
                 {IRRIGATION.map((i) => <option key={i} value={i}>{t(`irr.${i}`, lang)}</option>)}
               </select>
             </label>
             <div className="grid grid-cols-2 gap-2">
               <label className="block">{t("map.district", lang)}
-                <input className="mt-1 w-full rounded-xl border border-black/15 bg-white px-3 py-2" value={form.district}
+                <input className="mt-1 w-full rounded-xl border border-[var(--line-strong)] bg-[var(--surface-1)] px-3 py-2" value={form.district}
                        onChange={(e) => setForm({ ...form, district: e.target.value })} placeholder="Krishna" />
               </label>
               <label className="block">{t("map.state", lang)}
-                <input className="mt-1 w-full rounded-xl border border-black/15 bg-white px-3 py-2" value={form.state}
+                <input className="mt-1 w-full rounded-xl border border-[var(--line-strong)] bg-[var(--surface-1)] px-3 py-2" value={form.state}
                        onChange={(e) => setForm({ ...form, state: e.target.value })} />
               </label>
             </div>
@@ -135,7 +135,7 @@ export default function MapPage() {
                 {busy ? <Loader2 size={16} className="animate-spin" /> : <Satellite size={16} />}
                 {t("map.saveBuild", lang)}
               </button>
-              <button onClick={() => setDraft(null)} className="rounded-xl border border-black/15 bg-white px-4 py-2">{t("cancel", lang)}</button>
+              <button onClick={() => setDraft(null)} className="rounded-xl border border-[var(--line-strong)] bg-[var(--surface-1)] px-4 py-2">{t("cancel", lang)}</button>
             </div>
           </div>
         ) : field ? (
@@ -150,11 +150,11 @@ export default function MapPage() {
                 {[[MapPin, "start.1"], [Satellite, "start.2"], [Sprout, "start.3"]].map(([I, k], i) => (
                   <li key={k} className="flex items-center gap-3">
                     <span className="font-display grid h-7 w-7 shrink-0 place-items-center rounded-full bg-[var(--gold)] font-bold text-[var(--brand-900)]">{i + 1}</span>
-                    <I size={16} className="shrink-0 text-[var(--brand)]" /><span>{t(k, lang)}</span>
+                    <I size={16} className="shrink-0 text-[var(--brand-ink)]" /><span>{t(k, lang)}</span>
                   </li>
                 ))}
               </ol>
-              <p className="rounded-xl bg-[var(--leaf-50)] p-2.5 text-[var(--brand)]">{t("start.go", lang)}</p>
+              <p className="rounded-xl bg-[var(--leaf-50)] p-2.5 text-[var(--brand-ink)]">{t("start.go", lang)}</p>
               {busy && <p className="flex items-center gap-2"><Loader2 size={16} className="animate-spin" />{t("map.finding", lang)}</p>}
             </div>
           </div>
@@ -190,13 +190,13 @@ function FieldPanel({ field, lang, onChanged, onDeleted }) {
         {detail && <><dt className="text-[var(--text-secondary)]">{t("map.soil", lang)}</dt><dd>{detail.soil_texture ? `${detail.soil_texture}, clay ${detail.clay_pct}%, pH ${detail.ph_h2o}` : "—"}</dd></>}
         {detail && <><dt className="text-[var(--text-secondary)]">{t("map.irrigation", lang)}</dt><dd>{detail.irrigation_type ? t(`irr.${detail.irrigation_type}`, lang) : "—"}</dd></>}
         {detail && <><dt className="text-[var(--text-secondary)]">{t("map.boundary", lang)}</dt><dd>{t(BOUNDARY[detail.boundary_source] || "bnd.drawn", lang)}</dd></>}
-        <dt className="text-[var(--text-secondary)]">{t("map.status", lang)}</dt><dd className="flex items-center gap-1.5">{f.ingest_status !== "done" && f.ingest_status !== "failed" && <Loader2 size={14} className="animate-spin text-[var(--brand)]" />}{status}</dd>
+        <dt className="text-[var(--text-secondary)]">{t("map.status", lang)}</dt><dd className="flex items-center gap-1.5">{f.ingest_status !== "done" && f.ingest_status !== "failed" && <Loader2 size={14} className="animate-spin text-[var(--brand-ink)]" />}{status}</dd>
       </dl>
       {f.ingest_status === "failed" && (
-        <p className="rounded bg-amber-50 p-2 text-xs text-amber-900">{t("map.failedMsg", lang)}</p>
+        <p className="rounded-lg bg-[var(--gold-50)] p-2 text-xs text-[var(--gold-ink)]">{t("map.failedMsg", lang)}</p>
       )}
       {f.ingest_status === "done" && detail?.ingest_error && (
-        <p className="rounded bg-amber-50 p-2 text-xs text-amber-900">{t("map.gapsMsg", lang)}</p>
+        <p className="rounded-lg bg-[var(--gold-50)] p-2 text-xs text-[var(--gold-ink)]">{t("map.gapsMsg", lang)}</p>
       )}
       {f.ingest_status === "done" && (
         <Link to="/" className="flex items-center justify-between rounded-xl bg-[var(--brand)] px-4 py-2.5 font-semibold text-white shadow-sm">
@@ -204,9 +204,9 @@ function FieldPanel({ field, lang, onChanged, onDeleted }) {
         </Link>
       )}
       <div className="flex flex-wrap gap-2">
-        <button className="inline-flex items-center gap-1.5 rounded-xl border border-black/15 bg-white px-3 py-1.5"
+        <button className="inline-flex items-center gap-1.5 rounded-xl border border-[var(--line-strong)] bg-[var(--surface-1)] px-3 py-1.5"
                 onClick={async () => { await api.refreshField(f.id); onChanged(); }}><RefreshCw size={14} />{t("map.refresh", lang)}</button>
-        <button className="inline-flex items-center gap-1.5 rounded-xl border border-red-300 bg-white px-3 py-1.5 text-red-800"
+        <button className="inline-flex items-center gap-1.5 rounded-xl border border-[var(--red-line)] bg-[var(--surface-1)] px-3 py-1.5 text-[var(--red-ink)]"
                 onClick={async () => { if (confirm(t("map.deleteConfirm", lang))) { await api.deleteField(f.id); onDeleted(); } }}>
           <Trash2 size={14} />{t("delete", lang)}
         </button>

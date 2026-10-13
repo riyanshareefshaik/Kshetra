@@ -77,16 +77,16 @@ function Diary() {
     <Page title={t("diary.title", lang)}>
       <Card title={t("diary.new", lang)}>
         <div className="space-y-2 text-sm">
-          <textarea rows={3} lang={lang} className="w-full rounded border border-black/15 px-3 py-2" value={text}
+          <textarea rows={3} lang={lang} className="w-full rounded-lg border border-[var(--line-strong)] px-3 py-2" value={text}
                     onChange={(e) => setText(e.target.value)}
                     placeholder={t("diary.ph", lang)} />
           <div className="flex flex-wrap items-center gap-2">
-            <input type="date" className="rounded border border-black/15 px-2 py-1" value={day} onChange={(e) => setDay(e.target.value)} />
-            <button type="button" onClick={mic} className={`rounded border px-3 py-1.5 ${listening ? "border-[var(--status-critical)] text-[var(--status-critical)]" : "border-black/15"}`}>
+            <input type="date" className="rounded-lg border border-[var(--line-strong)] px-2 py-1" value={day} onChange={(e) => setDay(e.target.value)} />
+            <button type="button" onClick={mic} className={`rounded border px-3 py-1.5 ${listening ? "border-[var(--status-critical)] text-[var(--status-critical)]" : "border-[var(--line-strong)]"}`}>
               🎤 {listening ? t("listening", lang) : t("speak", lang)}
             </button>
-            <button disabled={busy || !text.trim()} onClick={() => save(null)} className="rounded bg-[var(--brand)] px-3 py-1.5 text-white disabled:opacity-50">{t("save", lang)}</button>
-            <label className="ml-auto cursor-pointer rounded border border-black/15 px-3 py-1.5">📷 {t("diary.packet", lang)}
+            <button disabled={busy || !text.trim()} onClick={() => save(null)} className="rounded-lg bg-[var(--brand)] px-3 py-1.5 text-white disabled:opacity-50">{t("save", lang)}</button>
+            <label className="ml-auto cursor-pointer rounded-lg border border-[var(--line-strong)] px-3 py-1.5">📷 {t("diary.packet", lang)}
               <input type="file" accept="image/*" capture="environment" className="hidden" onChange={onPhoto} />
             </label>
           </div>
@@ -120,7 +120,7 @@ function Diary() {
                 {Object.keys(e.structured || {}).length > 1 && (
                   <div className="mt-1 flex flex-wrap gap-1 text-xs">
                     {Object.entries(e.structured).filter(([k]) => k !== "activity_type").map(([k, v]) => (
-                      <span key={k} className="rounded bg-[var(--page)] px-1.5 py-0.5">{k.replaceAll("_", " ")}: {String(v)}</span>
+                      <span key={k} className="rounded-lg bg-[var(--page)] px-1.5 py-0.5">{k.replaceAll("_", " ")}: {String(v)}</span>
                     ))}
                   </div>
                 )}

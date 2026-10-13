@@ -30,9 +30,9 @@ export default function InsightsPage() {
     <Page title={`${t("insights", lang)} · seed companies`} wide>
       <p className="text-sm text-[var(--text-secondary)]">{data?.privacy || "Aggregated, anonymous data from farmers who chose to share."} Groups smaller than {data?.min_group_size ?? 5} fields are hidden.</p>
       <div className="flex flex-wrap gap-2 text-sm">
-        <input className="rounded border border-black/15 px-2 py-1" placeholder="State" value={filters.state} onChange={(e) => setFilters({ ...filters, state: e.target.value })} />
-        <input className="rounded border border-black/15 px-2 py-1" placeholder="District" value={filters.district} onChange={(e) => setFilters({ ...filters, district: e.target.value })} />
-        <select className="rounded border border-black/15 px-2 py-1" value={filters.crop} onChange={(e) => setFilters({ ...filters, crop: e.target.value })}>
+        <input className="rounded-lg border border-[var(--line-strong)] px-2 py-1" placeholder="State" value={filters.state} onChange={(e) => setFilters({ ...filters, state: e.target.value })} />
+        <input className="rounded-lg border border-[var(--line-strong)] px-2 py-1" placeholder="District" value={filters.district} onChange={(e) => setFilters({ ...filters, district: e.target.value })} />
+        <select className="rounded-lg border border-[var(--line-strong)] px-2 py-1" value={filters.crop} onChange={(e) => setFilters({ ...filters, crop: e.target.value })}>
           {CROPS.map((c) => <option key={c} value={c}>{c || "all crops"}</option>)}
         </select>
       </div>
@@ -66,7 +66,7 @@ export default function InsightsPage() {
                   </thead>
                   <tbody className="tabular">
                     {groups.map((g, i) => (
-                      <tr key={i} className="border-t border-black/5">
+                      <tr key={i} className="border-t border-[var(--line-soft)]">
                         <td className="py-1 pr-3">{g.year}</td><td className="pr-3">{g.district}</td><td className="pr-3 capitalize">{g.season}</td>
                         <td className="pr-3">{g.crop} · {g.variety || "any"}</td><td className="pr-3 text-right">{g.n_fields}</td>
                         <td className="pr-3 text-right">{g.avg_yield_mid_t_ha ?? "—"}</td>

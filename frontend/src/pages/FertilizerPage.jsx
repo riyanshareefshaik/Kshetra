@@ -52,7 +52,7 @@ function Fertilizer() {
       <ErrorBox error={error} />
       <Card title={t("fz.soil", lang)}>
         <p className="mb-2 text-sm text-[var(--text-secondary)]">{latest ? t("fz.latest", lang, { date: fmtDate(latest.test_date, lang) }) : t("fz.noSoil", lang)}</p>
-        <label className="inline-block cursor-pointer rounded border border-black/15 px-3 py-1.5 text-sm">📷 {t("fz.card", lang)}
+        <label className="inline-block cursor-pointer rounded-lg border border-[var(--line-strong)] px-3 py-1.5 text-sm">📷 {t("fz.card", lang)}
           <input type="file" accept="image/*" capture="environment" className="hidden" onChange={onCard} />
         </label>
         <form onSubmit={saveTest} className="mt-3 text-sm">
@@ -60,17 +60,17 @@ function Fertilizer() {
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
             {NUM_FIELDS.map(([k, label]) => (
               <label key={k} className="text-xs">{t(label, lang)}
-                <input type="number" step="any" min="0" className="mt-1 w-full rounded border border-black/15 px-2 py-1 text-sm"
+                <input type="number" step="any" min="0" className="mt-1 w-full rounded-lg border border-[var(--line-strong)] px-2 py-1 text-sm"
                        value={form[k] ?? ""} placeholder={latest?.[k] ?? ""} onChange={(e) => setForm({ ...form, [k]: e.target.value })} />
               </label>
             ))}
           </div>
-          <button disabled={busy} className="mt-2 rounded bg-[var(--brand)] px-3 py-1.5 text-white disabled:opacity-50">{t("fz.saveTest", lang)}</button>
+          <button disabled={busy} className="mt-2 rounded-lg bg-[var(--brand)] px-3 py-1.5 text-white disabled:opacity-50">{t("fz.saveTest", lang)}</button>
         </form>
       </Card>
 
       <Card title={t("fz.forCrop", lang)} actions={
-        <select className="rounded border border-black/15 px-2 py-1 text-sm" value={choice} onChange={(e) => setChoice(e.target.value)}>
+        <select className="rounded-lg border border-[var(--line-strong)] px-2 py-1 text-sm" value={choice} onChange={(e) => setChoice(e.target.value)}>
           {options.map((v) => <option key={`${v.crop}|${v.season}`} value={`${v.crop}|${v.season}`}>{cropName(v.crop, lang)} · {t(v.season, lang)}</option>)}
         </select>
       }>
@@ -82,13 +82,13 @@ function Fertilizer() {
               <thead className="text-left text-xs text-[var(--text-secondary)]"><tr><th className="py-1">{t("fz.product", lang)}</th><th>kg/ha</th><th>{t("fz.bags", lang)}</th><th className="text-right">{t("fz.cost", lang)}</th></tr></thead>
               <tbody className="tabular">
                 {result.products.map((p) => (
-                  <tr key={p.product} className="border-t border-black/5">
+                  <tr key={p.product} className="border-t border-[var(--line-soft)]">
                     <td className="py-1.5 font-medium">{p.product}</td><td>{p.kg_per_ha}</td>
                     <td>{p.bags} × {p.bag_kg} kg <span className="text-xs text-[var(--text-muted)]">({p.kg_for_field} kg)</span></td>
                     <td className="text-right">{rs(p.cost_rs)}</td>
                   </tr>
                 ))}
-                <tr className="border-t border-black/10 font-semibold"><td className="py-1.5">{t("fz.total", lang)}</td><td /><td /><td className="text-right">{rs(result.total_cost_rs)}</td></tr>
+                <tr className="border-t border-[var(--line)] font-semibold"><td className="py-1.5">{t("fz.total", lang)}</td><td /><td /><td className="text-right">{rs(result.total_cost_rs)}</td></tr>
               </tbody>
             </table>
             <div><div className="text-xs font-medium text-[var(--text-secondary)]">{t("fz.when", lang)}</div><p>{t(`sched.${result.crop}`, lang)}</p></div>

@@ -17,7 +17,7 @@ function NdviTooltip({ active, payload, lang }) {
   if (!active || !payload?.length) return null;
   const p = payload[0].payload;
   return (
-    <div className="rounded border border-black/10 bg-white px-2 py-1 text-xs shadow-sm">
+    <div className="rounded-lg border border-[var(--line)] bg-[var(--surface-1)] px-2 py-1 text-xs shadow-sm">
       <div className="font-medium">{fmtDate(p.t, lang)}</div>
       {p.ndvi_smoothed != null && <div>{t("tl.smoothed", lang)}: <span className="tabular">{p.ndvi_smoothed.toFixed(2)}</span></div>}
       {p.obs != null && <div style={{ color: C.series1 }}>● {t("tl.clear", lang)}: <span className="tabular">{p.obs.toFixed(2)}</span></div>}
@@ -76,7 +76,7 @@ function Timeline() {
       <div className="flex gap-1" role="group">
         {Object.keys(RANGES).map((k) => (
           <button key={k} onClick={() => setRange(k)}
-                  className={`rounded border px-2.5 py-1 text-sm ${range === k ? "border-[var(--brand)] bg-[var(--brand)] text-white" : "border-black/15 bg-white"}`}>
+                  className={`rounded border px-2.5 py-1 text-sm ${range === k ? "border-[var(--brand)] bg-[var(--brand)] text-white" : "border-[var(--line-strong)] bg-[var(--surface-1)]"}`}>
             {t(k, lang)}
           </button>
         ))}
@@ -137,7 +137,7 @@ function Timeline() {
               </thead>
               <tbody>
                 {[...seasons].reverse().map((s) => (
-                  <tr key={s.id} className="border-t border-black/5">
+                  <tr key={s.id} className="border-t border-[var(--line-soft)]">
                     <td className="py-1.5 pr-3">{t(s.season, lang)} {s.year}</td>
                     <td className="pr-3"><CropBadge season={s} /></td>
                     <td className="tabular pr-3">{fmtDate(s.sowing_date, lang)}{["sar", "nisar"].includes(s.date_detection) && <span className="text-xs text-[var(--text-muted)]"> · {t("tl.radarSown", lang)}</span>}</td>
@@ -145,7 +145,7 @@ function Timeline() {
                     <td className="pr-3"><RangeBar low={s.yield_low_t_ha} mid={s.yield_mid_t_ha} high={s.yield_high_t_ha} max={maxYield} />
                       {s.yield_is_forecast && <span className="text-xs text-[var(--text-muted)]"> {t("forecast", lang)}</span>}</td>
                     <td>
-                      <select aria-label={t("tl.correct", lang)} className="rounded border border-black/15 px-1 py-0.5 text-xs"
+                      <select aria-label={t("tl.correct", lang)} className="rounded-lg border border-[var(--line-strong)] px-1 py-0.5 text-xs"
                               value={s.crop_confirmed_by_farmer ? s.crop : ""} onChange={(e) => e.target.value && confirm(s, e.target.value)}>
                         <option value="">{s.crop_confirmed_by_farmer ? "" : t("tl.confirm", lang)}</option>
                         {CROPS.map((c) => <option key={c} value={c}>{cropName(c, lang)}</option>)}

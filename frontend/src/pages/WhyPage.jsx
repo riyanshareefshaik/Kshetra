@@ -91,12 +91,12 @@ function Why() {
                     <tr><th className="py-1 pr-3">#</th><th className="pr-3">{t("season", lang)}</th><th className="pr-3">{t("yieldRange", lang)}</th><th>{t("why.different", lang)}</th></tr>
                   </thead>
                   <tbody>
-                    <tr className="border-t border-black/5 bg-[var(--page)]">
+                    <tr className="border-t border-[var(--line-soft)] bg-[var(--page)]">
                       <td className="py-1.5 pr-3 font-medium">{t("why.yourField", lang)}</td><td className="pr-3">{twins.year}</td>
                       <td className="pr-3"><RangeBar low={why.yield_t_ha.low} mid={why.yield_t_ha.mid} high={why.yield_t_ha.high} max={maxY} /></td><td />
                     </tr>
                     {twins.twins.map((tw, i) => (
-                      <tr key={tw.season_id} className="border-t border-black/5 align-top">
+                      <tr key={tw.season_id} className="border-t border-[var(--line-soft)] align-top">
                         <td className="py-1.5 pr-3">{i + 1} <span className="text-xs text-[var(--text-muted)]">{tw.district}</span></td>
                         <td className="pr-3">{tw.year}</td>
                         <td className="pr-3"><RangeBar low={tw.yield_low_t_ha} mid={tw.yield_mid_t_ha} high={tw.yield_high_t_ha} max={maxY} /></td>

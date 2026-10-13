@@ -26,7 +26,7 @@ function Market() {
 
   return (
     <Page title={t("mk.title", lang)} wide>
-      <select className="rounded border border-black/15 px-2 py-1 text-sm" value={crop} onChange={(e) => setCrop(e.target.value)}>
+      <select className="rounded-lg border border-[var(--line-strong)] px-2 py-1 text-sm" value={crop} onChange={(e) => setCrop(e.target.value)}>
         {CROPS.map((c) => <option key={c} value={c}>{cropName(c, lang)}</option>)}
       </select>
       <ErrorBox error={error} />
@@ -61,7 +61,7 @@ function Market() {
                   </thead>
                   <tbody className="tabular">
                     {data.markets.map((m) => (
-                      <tr key={`${m.market}-${m.district}`} className="border-t border-black/5">
+                      <tr key={`${m.market}-${m.district}`} className="border-t border-[var(--line-soft)]">
                         <td className="py-1.5 pr-3">{m.market}</td><td className="pr-3">{m.district}</td>
                         <td className="pr-3 text-right">₹{Math.round(m.modal_price).toLocaleString("en-IN")}</td>
                         <td className="pr-3 text-right">{m.distance_km != null ? `${m.distance_km} km` : "—"}</td>

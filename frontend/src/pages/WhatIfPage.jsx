@@ -71,7 +71,7 @@ function WhatIf() {
         <Card title={t("wi.plan", lang)}>
           <div className="space-y-4 text-sm">
             <label className="block">{t("wi.cropVariety", lang)}
-              <select className="mt-1 w-full rounded border border-black/15 px-2 py-1" value={key || ""}
+              <select className="mt-1 w-full rounded-lg border border-[var(--line-strong)] px-2 py-1" value={key || ""}
                       onChange={(e) => { setKey(e.target.value); setOffset(0); const nv = varieties.find((x) => `${x.crop}|${x.season}|${x.variety}` === e.target.value); setN(nv?.recommended_n_kg_ha || 0); }}>
                 {varieties.map((x) => {
                   const k = `${x.crop}|${x.season}|${x.variety}`;
@@ -94,7 +94,7 @@ function WhatIf() {
               <div className="mt-1 flex flex-wrap gap-1">
                 {IRRIGATION.map((k) => (
                   <button key={k} onClick={() => setIrrigation(k)}
-                          className={`rounded border px-2 py-1 ${irrigation === k ? "border-[var(--brand)] bg-[var(--brand)] text-white" : "border-black/15"}`}>{t(`irr.${k}`, lang)}</button>
+                          className={`rounded border px-2 py-1 ${irrigation === k ? "border-[var(--brand)] bg-[var(--brand)] text-white" : "border-[var(--line-strong)]"}`}>{t(`irr.${k}`, lang)}</button>
                 ))}
               </div>
             </fieldset>

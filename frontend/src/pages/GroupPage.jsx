@@ -33,16 +33,16 @@ export default function GroupPage() {
       <div className="grid gap-4 md:grid-cols-2">
         <Card title={t("gr.create", lang)}>
           <form onSubmit={act(async () => { const x = await api.createGroup({ name }); setName(""); setGid(x.id); })} className="flex gap-2 text-sm">
-            <input required minLength={2} className="min-w-0 flex-1 rounded border border-black/15 px-2 py-1" placeholder={t("gr.name", lang)}
+            <input required minLength={2} className="min-w-0 flex-1 rounded-lg border border-[var(--line-strong)] px-2 py-1" placeholder={t("gr.name", lang)}
                    value={name} onChange={(e) => setName(e.target.value)} />
-            <button className="rounded bg-[var(--brand)] px-3 py-1 text-white">{t("save", lang)}</button>
+            <button className="rounded-lg bg-[var(--brand)] px-3 py-1 text-white">{t("save", lang)}</button>
           </form>
         </Card>
         <Card title={t("gr.join", lang)}>
           <form onSubmit={act(async () => { const x = await api.joinGroup(code); setCode(""); setGid(x.id); })} className="flex gap-2 text-sm">
-            <input required className="min-w-0 flex-1 rounded border border-black/15 px-2 py-1 uppercase" placeholder={t("gr.code", lang)}
+            <input required className="min-w-0 flex-1 rounded-lg border border-[var(--line-strong)] px-2 py-1 uppercase" placeholder={t("gr.code", lang)}
                    value={code} onChange={(e) => setCode(e.target.value)} />
-            <button className="rounded bg-[var(--brand)] px-3 py-1 text-white">{t("gr.join", lang)}</button>
+            <button className="rounded-lg bg-[var(--brand)] px-3 py-1 text-white">{t("gr.join", lang)}</button>
           </form>
         </Card>
       </div>
@@ -52,12 +52,12 @@ export default function GroupPage() {
           <div className="flex flex-wrap gap-1">
             {groups.map((x) => (
               <button key={x.id} onClick={() => setGid(x.id)}
-                      className={`rounded border px-2.5 py-1 text-sm ${x.id === gid ? "border-[var(--brand)] bg-[var(--brand)] text-white" : "border-black/15 bg-white"}`}>{x.name}</button>
+                      className={`rounded border px-2.5 py-1 text-sm ${x.id === gid ? "border-[var(--brand)] bg-[var(--brand)] text-white" : "border-[var(--line-strong)] bg-[var(--surface-1)]"}`}>{x.name}</button>
             ))}
           </div>
           {g && (
             <Card title={g.name} actions={
-              <button className="rounded border border-red-300 px-2 py-1 text-xs text-red-800" onClick={act(() => api.leaveGroup(g.id))}>{t("gr.leave", lang)}</button>
+              <button className="rounded-lg border border-[var(--red-line)] px-2 py-1 text-xs text-[var(--red-ink)]" onClick={act(() => api.leaveGroup(g.id))}>{t("gr.leave", lang)}</button>
             }>
               {g.join_code && <p className="mb-2 text-sm">{t("gr.codeShare", lang, { c: g.join_code })}</p>}
               <label className="flex items-center gap-2 text-sm">
@@ -84,7 +84,7 @@ export default function GroupPage() {
                         </thead>
                         <tbody className="tabular">
                           {dash.fields.map((f) => (
-                            <tr key={f.id} className="border-t border-black/5">
+                            <tr key={f.id} className="border-t border-[var(--line-soft)]">
                               <td className="py-1.5 pr-3">{f.name || "—"}</td><td className="pr-3">{f.farmer}</td><td className="pr-3">{f.area_ha.toFixed(2)} ha</td>
                               <td className="pr-3">{f.crop_now ? cropName(f.crop_now, lang) : "—"}</td><td>{f.stress_30d}</td>
                             </tr>

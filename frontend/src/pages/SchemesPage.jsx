@@ -15,7 +15,7 @@ export default function SchemesPage() {
       <ErrorBox error={error} />
       <p className="text-sm text-[var(--text-secondary)]">{t("sc.note", lang)}</p>
       {!data ? (!error && <Loading />) : data.schemes.map((s) => (
-        <Card key={s.id} title={s.name} actions={<span className="rounded bg-[var(--page)] px-2 py-0.5 text-xs">{t(s.level === "state" ? "sc.state" : "sc.central", lang)}</span>}>
+        <Card key={s.id} title={s.name} actions={<span className="rounded-lg bg-[var(--page)] px-2 py-0.5 text-xs">{t(s.level === "state" ? "sc.state" : "sc.central", lang)}</span>}>
           <dl className="space-y-1.5 text-sm" lang="en">
             <div><dt className="inline font-medium">{t("sc.why", lang)}: </dt><dd className="inline">{s.why}</dd></div>
             <div><dt className="inline font-medium">{t("sc.benefit", lang)}: </dt><dd className="inline">{s.benefit}</dd></div>
@@ -23,7 +23,7 @@ export default function SchemesPage() {
             <div><dt className="inline font-medium">{t("sc.how", lang)}: </dt><dd className="inline">{s.how}</dd></div>
           </dl>
           <div className="mt-2 flex items-center gap-3 text-sm">
-            <a className="text-[var(--series-1)] underline" href={s.link} target="_blank" rel="noreferrer">{t("sc.open", lang)} ↗</a>
+            <a className="font-semibold text-[var(--brand-ink)] underline" href={s.link} target="_blank" rel="noreferrer">{t("sc.open", lang)} ↗</a>
             <ListenButton text={`${s.name}. ${s.benefit}`} />
           </div>
         </Card>

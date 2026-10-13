@@ -93,17 +93,17 @@ function Ask() {
     <Page title={t("ask.title", lang)}>
       <Card>
         <form className="flex flex-wrap gap-2" onSubmit={(e) => { e.preventDefault(); send(question); }}>
-          <input className="min-w-0 flex-1 rounded border border-black/15 px-3 py-2" value={question} lang={lang}
+          <input className="min-w-0 flex-1 rounded-lg border border-[var(--line-strong)] px-3 py-2" value={question} lang={lang}
                  onChange={(e) => setQuestion(e.target.value)} placeholder={EXAMPLES[lang][0]} />
           <button type="button" onClick={mic} aria-pressed={listening}
-                  className={`rounded border px-3 py-2 ${listening ? "border-[var(--status-critical)] text-[var(--status-critical)]" : "border-black/15"}`}>
+                  className={`rounded border px-3 py-2 ${listening ? "border-[var(--status-critical)] text-[var(--status-critical)]" : "border-[var(--line-strong)]"}`}>
             🎤 {listening ? t("listening", lang) : t("speak", lang)}
           </button>
-          <button disabled={busy} className="rounded bg-[var(--brand)] px-4 py-2 text-white disabled:opacity-50">{t("send", lang)}</button>
+          <button disabled={busy} className="rounded-lg bg-[var(--brand)] px-4 py-2 text-white disabled:opacity-50">{t("send", lang)}</button>
         </form>
         <div className="mt-2 flex flex-wrap gap-2">
           {EXAMPLES[lang].map((q) => (
-            <button key={q} onClick={() => send(q)} className="rounded-full border border-black/10 bg-[var(--page)] px-3 py-1 text-xs">{q}</button>
+            <button key={q} onClick={() => send(q)} className="rounded-full border border-[var(--line)] bg-[var(--page)] px-3 py-1 text-xs">{q}</button>
           ))}
         </div>
         <p className="mt-2 text-xs text-[var(--text-muted)]">{t("ask.only", lang)}</p>
@@ -116,7 +116,7 @@ function Ask() {
             <p className="text-sm font-medium">{m.question}</p>
             <p className={`mt-2 whitespace-pre-wrap ${m.answered === false ? "text-[var(--text-secondary)]" : ""}`}>{m.answer}</p>
             <div className="mt-2 flex flex-wrap items-center gap-3 text-xs">
-              <button onClick={() => speak(m.answer, m.language || lang).catch(setError)} className="rounded border border-black/10 px-2 py-0.5">🔊 {t("listen", lang)}</button>
+              <button onClick={() => speak(m.answer, m.language || lang).catch(setError)} className="rounded-lg border border-[var(--line)] px-2 py-0.5">🔊 {t("listen", lang)}</button>
             </div>
             {m.sources?.length > 0 && (
               <details className="mt-2 text-xs">

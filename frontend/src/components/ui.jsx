@@ -7,11 +7,11 @@ import { FieldScene, CropIcon } from "./art.jsx";
 import { C } from "./tokens.jsx";
 
 const TONES = {
-  leaf: "bg-[var(--leaf-50)] text-[var(--brand)]",
-  gold: "bg-[var(--gold-50)] text-[#9a6a06]",
+  leaf: "bg-[var(--leaf-50)] text-[var(--brand-ink)]",
+  gold: "bg-[var(--gold-50)] text-[var(--gold-ink)]",
   sky: "bg-[var(--sky-50)] text-[var(--sky)]",
   soil: "bg-[var(--soil-50)] text-[var(--soil)]",
-  red: "bg-red-50 text-[var(--status-critical)]",
+  red: "bg-[var(--red-50)] text-[var(--status-critical)]",
 };
 
 export function IconBadge({ icon: Icon, tone = "leaf", size = 18 }) {
@@ -75,7 +75,7 @@ export function Loading({ lines = 3 }) {
 export function ErrorBox({ error }) {
   if (!error) return null;
   return (
-    <div role="alert" className="rounded-2xl border border-[var(--status-critical)]/30 bg-red-50 px-4 py-2.5 text-sm text-red-900">
+    <div role="alert" className="rounded-2xl border border-[var(--status-critical)]/30 bg-[var(--red-50)] px-4 py-2.5 text-sm text-[var(--red-ink)]">
       {String(error.message || error)}
     </div>
   );
@@ -95,7 +95,7 @@ export function NeedField({ children }) {
             <div className="grid gap-2 sm:grid-cols-2">
               {fields.map((f) => (
                 <button key={f.id} onClick={() => selectField(f.id)}
-                        className="flex items-center gap-3 rounded-xl border border-black/10 bg-white p-3 text-left hover:border-[var(--leaf)]">
+                        className="flex items-center gap-3 rounded-xl border border-[var(--line)] bg-[var(--surface-1)] p-3 text-left hover:border-[var(--leaf)]">
                   <IconBadge icon={Sprout} /><span><b>{f.name || "Field"}</b><span className="block text-xs text-[var(--text-muted)]">{f.area_ha?.toFixed(2)} ha · {f.district || ""}</span></span>
                 </button>
               ))}
@@ -119,9 +119,9 @@ export function CropBadge({ season }) {
       <CropIcon crop={season.crop} size={20} />
       <span className="font-medium">{cropName(season.crop, lang)}</span>
       {season.crop_confirmed_by_farmer ? (
-        <span className="rounded bg-green-50 px-1 text-[11px] text-green-800">✓ {t("confirmedByFarmer", lang)}</span>
+        <span className="rounded-lg bg-[var(--leaf-50)] px-1 text-[11px] text-[var(--brand-ink)]">✓ {t("confirmedByFarmer", lang)}</span>
       ) : pct != null && (
-        <span className={`rounded px-1 text-[11px] ${uncertain ? "bg-amber-50 text-amber-900" : "bg-green-50 text-green-800"}`}>
+        <span className={`rounded px-1 text-[11px] ${uncertain ? "bg-[var(--gold-50)] text-[var(--gold-ink)]" : "bg-[var(--leaf-50)] text-[var(--brand-ink)]"}`}>
           {pct}%{uncertain ? ` · ${t("uncertain", lang)}` : ""}
         </span>
       )}
@@ -183,7 +183,7 @@ export function RangeBar({ low, mid, high, max }) {
 export function SeasonSelect({ seasons, value, onChange }) {
   const { lang } = useApp();
   return (
-    <select className="rounded-xl border border-black/10 bg-white px-3 py-2 text-sm shadow-sm" value={value || ""}
+    <select className="rounded-xl border border-[var(--line)] bg-[var(--surface-1)] px-3 py-2 text-sm shadow-sm" value={value || ""}
             onChange={(e) => onChange(e.target.value)}>
       {seasons.map((s) => (
         <option key={s.id} value={s.id}>
@@ -198,7 +198,7 @@ export function ListenButton({ text }) {
   const { lang } = useApp();
   return (
     <button onClick={() => import("./speech.js").then((m) => m.speak(text, lang)).catch(() => {})}
-            className="inline-flex items-center gap-1 rounded-full border border-black/10 bg-white px-2.5 py-1 text-xs hover:border-[var(--leaf)]"><Volume2 size={14} /> {t("listen", lang)}</button>
+            className="inline-flex items-center gap-1 rounded-full border border-[var(--line)] bg-[var(--surface-1)] px-2.5 py-1 text-xs hover:border-[var(--leaf)]"><Volume2 size={14} /> {t("listen", lang)}</button>
   );
 }
 
