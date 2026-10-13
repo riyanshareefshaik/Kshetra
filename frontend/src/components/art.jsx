@@ -53,16 +53,18 @@ export function CropIcon({ crop, size = 32, className = "" }) {
 }
 
 /** Weather icon from a forecast day. */
-export function WeatherIcon({ day, size = 28, className = "" }) {
+export function WeatherIcon({ day, size = 28, className = "", onDark = false }) {
   const rain = day?.rain_mm ?? 0;
   const prob = day?.rain_prob ?? 0;
-  const props = { size, className, "aria-hidden": true, strokeWidth: 1.8 };
-  if (rain >= 64.5) return <CloudLightning {...props} color="#3b6fb0" />;
-  if (rain >= 10) return <CloudRain {...props} color="#3b82c4" />;
-  if (rain >= 2.5) return <CloudDrizzle {...props} color="#5b9bd5" />;
-  if (prob >= 50) return <Cloud {...props} color="#8a96a3" />;
-  if (prob >= 25) return <CloudSun {...props} color="#e9a823" />;
-  return <Sun {...props} color="#e9a823" />;
+  const props = { size, className, "aria-hidden": true, strokeWidth: onDark ? 1.6 : 1.8 };
+  const sun = onDark ? "#fcd34d" : "#e9a823";
+  const cloud = (c) => (onDark ? "#ffffff" : c);
+  if (rain >= 64.5) return <CloudLightning {...props} color={cloud("#3b6fb0")} />;
+  if (rain >= 10) return <CloudRain {...props} color={cloud("#3b82c4")} />;
+  if (rain >= 2.5) return <CloudDrizzle {...props} color={cloud("#5b9bd5")} />;
+  if (prob >= 50) return <Cloud {...props} color={cloud("#8a96a3")} />;
+  if (prob >= 25) return <CloudSun {...props} color={sun} />;
+  return <Sun {...props} color={sun} />;
 }
 
 /** Rolling fields under a rising sun, for welcome and empty screens. */

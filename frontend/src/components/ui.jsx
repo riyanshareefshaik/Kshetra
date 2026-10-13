@@ -16,7 +16,7 @@ const TONES = {
 
 export function IconBadge({ icon: Icon, tone = "leaf", size = 18 }) {
   if (!Icon) return null;
-  return <span className={`grid h-8 w-8 shrink-0 place-items-center rounded-xl ${TONES[tone]}`}><Icon size={size} strokeWidth={2.1} /></span>;
+  return <span className={`grid h-8 w-8 shrink-0 place-items-center rounded-[10px] ${TONES[tone]}`}><Icon size={size} strokeWidth={2.1} /></span>;
 }
 
 export function Card({ title, icon, tone = "leaf", children, className = "", actions }) {
@@ -24,7 +24,7 @@ export function Card({ title, icon, tone = "leaf", children, className = "", act
     <section className={`k-card k-rise p-4 sm:p-5 ${className}`}>
       {(title || actions) && (
         <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-          {title && <h2 className="flex items-center gap-2 text-lg font-semibold leading-tight"><IconBadge icon={icon} tone={tone} />{title}</h2>}
+          {title && <h2 className="flex items-center gap-2.5 text-base font-semibold leading-tight sm:text-[17px]"><IconBadge icon={icon} tone={tone} />{title}</h2>}
           {actions}
         </div>
       )}
@@ -37,12 +37,12 @@ export function Page({ title, icon, subtitle, children, wide = false }) {
   const { pathname } = useLocation();
   icon = icon || ALL_PAGES.find((p) => p.path === pathname)?.icon;
   return (
-    <div className={`mx-auto w-full ${wide ? "max-w-6xl" : "max-w-4xl"} space-y-4 px-4 py-5 sm:px-6`}>
+    <div className={`mx-auto w-full ${wide ? "max-w-6xl" : "max-w-4xl"} space-y-4 px-4 py-6 sm:px-6 sm:py-8`}>
       {title && (
-        <div className="flex items-center gap-3">
-          {icon && <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-[var(--brand)] text-white shadow-sm">{(() => { const I = icon; return <I size={22} />; })()}</span>}
+        <div className="k-rise flex items-center gap-3.5 pb-1">
+          {icon && <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-[var(--leaf-50)] text-[var(--brand-ink)] ring-1 ring-[var(--leaf-100)]">{(() => { const I = icon; return <I size={23} strokeWidth={2} />; })()}</span>}
           <div className="min-w-0">
-            <h1 className="truncate text-2xl font-bold leading-tight">{title}</h1>
+            <h1 className="truncate text-2xl leading-tight sm:text-[28px]">{title}</h1>
             {subtitle && <p className="truncate text-sm text-[var(--text-secondary)]">{subtitle}</p>}
           </div>
         </div>
@@ -56,7 +56,7 @@ export function StatTile({ label, value, sub, icon, tone = "leaf" }) {
   return (
     <div className="k-card k-rise p-3.5">
       <div className="flex items-center gap-2 text-xs text-[var(--text-secondary)]">{icon && <IconBadge icon={icon} tone={tone} size={15} />}{label}</div>
-      <div className="font-display mt-1.5 text-2xl font-bold">{value}</div>
+      <div className="tabular mt-1.5 text-2xl font-bold tracking-tight">{value}</div>
       {sub && <div className="mt-0.5 text-xs text-[var(--text-muted)]">{sub}</div>}
     </div>
   );

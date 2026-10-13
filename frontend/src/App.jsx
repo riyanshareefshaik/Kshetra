@@ -63,13 +63,11 @@ function useInstallPrompt() {
   return prompt && (async () => { prompt.prompt(); await prompt.userChoice; setPrompt(null); });
 }
 
-function Brand({ light = false }) {
+function Brand({ compact = false }) {
   return (
-    <span className={`font-display flex items-center gap-1.5 text-xl font-bold ${light ? "text-white" : "text-[var(--brand-ink)]"}`}>
-      <span className={`grid h-8 w-8 place-items-center rounded-xl ${light ? "bg-white/15" : "bg-[var(--leaf-50)]"}`}>
-        <Sprout size={20} strokeWidth={2.2} />
-      </span>
-      Kshetra
+    <span className="flex items-center gap-2 text-[17px] font-bold tracking-tight text-[var(--text-primary)]">
+      <span className="k-logo grid h-8 w-8 place-items-center rounded-[10px]"><Sprout size={18} strokeWidth={2.4} /></span>
+      <span className={compact ? "hidden sm:inline" : ""}>Kshetra</span>
     </span>
   );
 }
@@ -92,7 +90,7 @@ function Controls() {
   const { fields, fieldId, selectField, lang, setLang } = useApp();
   const voice = useVoiceNav();
   const install = useInstallPrompt();
-  const base = "border-white/25 bg-white/10 text-white hover:bg-white/20";
+  const base = "border-[var(--line)] bg-[var(--surface-1)] text-[var(--text-primary)] shadow-[var(--shadow)] hover:bg-[var(--surface-2)]";
   return (
     <>
       <select aria-label={t("chooseField", lang)} className={`min-w-0 max-w-[11rem] rounded-xl border px-2.5 py-1.5 text-sm ${base}`}
@@ -129,16 +127,18 @@ function Sidebar() {
   const { lang } = useApp();
   const { search } = useLocation();
   return (
-    <aside className="hidden w-60 shrink-0 flex-col border-r border-[var(--line-soft)] bg-[var(--surface-1)]/80 backdrop-blur lg:flex">
-      <div className="px-5 py-4"><Brand /></div>
+    <aside className="hidden w-64 shrink-0 flex-col border-r border-[var(--line)] lg:flex">
+      <div className="px-5 pb-5 pt-5"><Brand /></div>
       <nav className="flex-1 space-y-4 overflow-y-auto px-3 pb-6">
         {NAV.map((g) => (
           <div key={g.group}>
-            <div className="px-2 pb-1 text-[11px] font-semibold uppercase tracking-wide text-[var(--text-muted)]">{t(g.group, lang)}</div>
+            <div className="px-3 pb-1.5 text-[11px] font-medium uppercase tracking-[0.08em] text-[var(--text-muted)]">{t(g.group, lang)}</div>
             {g.items.map((p) => (
               <NavLink key={p.path} to={{ pathname: p.path, search }} end
-                       className={({ isActive }) => `flex items-center gap-2.5 rounded-xl px-2.5 py-2 text-sm transition-colors ${isActive ? "bg-[var(--leaf-50)] font-semibold text-[var(--brand-ink)]" : "text-[var(--text-secondary)] hover:bg-[var(--hover)]"}`}>
-                <p.icon size={18} strokeWidth={2} /> {t(p.key, lang)}
+                       className={({ isActive }) => `group flex items-center gap-3 rounded-xl px-3 py-2 text-sm transition-all ${isActive ? "bg-[var(--surface-1)] font-semibold text-[var(--text-primary)] shadow-[var(--shadow)] ring-1 ring-[var(--line)]" : "text-[var(--text-secondary)] hover:bg-[var(--hover)] hover:text-[var(--text-primary)]"}`}>
+                {({ isActive }) => (<>
+                  <p.icon size={18} strokeWidth={isActive ? 2.3 : 1.9} className={isActive ? "text-[var(--brand-ink)]" : ""} /> {t(p.key, lang)}
+                </>)}
               </NavLink>
             ))}
           </div>
@@ -154,18 +154,18 @@ function TabBar({ onMore }) {
   const tabs = TABS.map((p) => ALL_PAGES.find((x) => x.path === p));
   const inMore = !TABS.includes(pathname);
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-[1000] grid grid-cols-5 border-t border-[var(--line)] bg-[var(--surface-1)]/95 pb-[env(safe-area-inset-bottom)] backdrop-blur lg:hidden">
+    <nav className="k-tabbar fixed inset-x-3 bottom-[calc(0.75rem+env(safe-area-inset-bottom))] z-[1000] grid grid-cols-5 rounded-[1.75rem] p-1.5 lg:hidden">
       {tabs.map((p) => (
         <NavLink key={p.path} to={{ pathname: p.path, search }} end
-                 className={({ isActive }) => `flex flex-col items-center gap-0.5 py-2 text-[11px] ${isActive ? "font-semibold text-[var(--brand-ink)]" : "text-[var(--text-secondary)]"}`}>
+                 className={({ isActive }) => `flex flex-col items-center gap-0.5 rounded-[1.35rem] py-1.5 text-[10.5px] transition-colors ${isActive ? "bg-[var(--leaf-50)] font-semibold text-[var(--brand-ink)]" : "text-[var(--text-secondary)]"}`}>
           {({ isActive }) => (<>
-            <span className={`grid h-7 w-12 place-items-center rounded-full transition-colors ${isActive ? "bg-[var(--leaf-100)]" : ""}`}><p.icon size={19} /></span>
+            <span className="grid h-7 place-items-center"><p.icon size={20} strokeWidth={isActive ? 2.4 : 1.9} /></span>
             <span className="max-w-full truncate px-1">{t(p.key, lang)}</span>
           </>)}
         </NavLink>
       ))}
-      <button onClick={onMore} className={`flex flex-col items-center gap-0.5 py-2 text-[11px] ${inMore ? "font-semibold text-[var(--brand-ink)]" : "text-[var(--text-secondary)]"}`}>
-        <span className={`grid h-7 w-12 place-items-center rounded-full ${inMore ? "bg-[var(--leaf-100)]" : ""}`}><Ellipsis size={19} /></span>
+      <button onClick={onMore} className={`flex flex-col items-center gap-0.5 rounded-[1.35rem] py-1.5 text-[10.5px] ${inMore ? "bg-[var(--leaf-50)] font-semibold text-[var(--brand-ink)]" : "text-[var(--text-secondary)]"}`}>
+        <span className="grid h-7 place-items-center"><Ellipsis size={20} strokeWidth={inMore ? 2.4 : 1.9} /></span>
         {t("nav.more", lang)}
       </button>
     </nav>
@@ -195,8 +195,9 @@ function MoreSheet({ open, onClose }) {
   if (!open) return null;
   return (
     <div className="fixed inset-0 z-[1100] lg:hidden" role="dialog" aria-modal="true">
-      <button className="absolute inset-0 bg-black/30" aria-label="Close" onClick={onClose} />
-      <div className="k-rise absolute inset-x-0 bottom-0 max-h-[80vh] overflow-y-auto rounded-t-3xl bg-[var(--page)] p-4 pb-[calc(1rem+env(safe-area-inset-bottom))]">
+      <button className="absolute inset-0 bg-black/40 backdrop-blur-[2px]" aria-label="Close" onClick={onClose} />
+      <div className="k-rise absolute inset-x-0 bottom-0 max-h-[85vh] overflow-y-auto rounded-t-[2rem] border-t border-[var(--line)] bg-[var(--page)] p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] shadow-[var(--shadow-lg)]">
+        <div className="mx-auto mb-3 h-1 w-10 rounded-full bg-[var(--line-strong)]" />
         <div className="mb-2 flex items-center justify-between"><Brand /><button onClick={onClose} aria-label="Close" className="grid h-9 w-9 place-items-center rounded-xl bg-[var(--surface-1)]"><X size={18} /></button></div>
         {NAV.map((g) => (
           <div key={g.group} className="mt-3">
@@ -229,14 +230,14 @@ export default function App() {
     <div className="flex h-full">
       <Sidebar />
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="k-header text-white">
-          <div className="flex items-center gap-2 px-4 py-2.5">
-            <span className="lg:hidden"><Brand light /></span>
+        <header className="k-topbar sticky top-0 z-[900]">
+          <div className="mx-auto flex max-w-6xl items-center gap-2 px-4 py-2.5 sm:px-6">
+            <span className="lg:hidden"><Brand compact /></span>
             <div className="flex min-w-0 flex-1 items-center gap-2"><Controls /></div>
           </div>
         </header>
-        {!online && <div className="flex items-center gap-2 bg-[var(--gold-50)] px-4 py-1.5 text-sm text-[var(--gold-ink)]"><WifiOff size={15} />{t("offline", lang)}</div>}
-        {error && online && <div className="bg-[var(--red-50)] px-4 py-2 text-sm text-[var(--red-ink)]">{t(error, lang)}</div>}
+        {!online && <div className="mx-4 mt-3 flex items-center gap-2 rounded-xl bg-[var(--gold-50)] px-4 py-2 text-sm text-[var(--gold-ink)]"><WifiOff size={15} />{t("offline", lang)}</div>}
+        {error && online && <div className="mx-4 mt-3 rounded-xl bg-[var(--red-50)] px-4 py-2 text-sm text-[var(--red-ink)]">{t(error, lang)}</div>}
         <main className="k-safe-bottom min-h-0 flex-1 overflow-y-auto">
           <Suspense fallback={<div className="p-4"><Loading /></div>}>
             <Routes>
