@@ -1,171 +1,246 @@
 @import "tailwindcss";
 
-/* Kshetra look: paddy-green, harvest-gold and soil tones on warm paper.
-   Chart colours stay on the validated dataviz palette (components/tokens.jsx). */
+/* Kshetra design tokens.
+   Clean neutral surfaces, one emerald accent, warm gold and sky as helpers.
+   Chart colours mirror these in components/tokens.jsx (validated dataviz palette). */
 :root {
   color-scheme: light;
   --surface-1: #ffffff;
-  --surface-2: #faf8f2;
-  --page: #f6f3ea;
-  --text-primary: #1d2b1f;
-  --text-secondary: #4f5a4f;
-  --text-muted: #7d8378;
-  --grid: #e5e2d6;
-  --axis: #c9c5b5;
+  --surface-2: #f8f8f6;
+  --page: #f5f6f3;
+  --text-primary: #111613;
+  --text-secondary: #545a55;
+  --text-muted: #868c86;
+  --grid: #ececea;
+  --axis: #d4d4d0;
   --series-1: #2a78d6;
   --series-2: #eb6834;
-  --band: #efeee9;
+  --band: #f1f1ee;
   --status-good: #0ca30c;
   --status-warning: #fab219;
   --status-serious: #ec835a;
   --status-critical: #d03b3b;
 
-  --brand: #1b5e20;
-  --brand-900: #0f3d1e;
-  --brand-ink: #1b5e20;      /* brand colour used as text */
-  --leaf: #2e7d32;
-  --leaf-50: #ecf6ea;
-  --leaf-100: #d6ecd2;
-  --gold: #e9a823;
-  --gold-50: #fdf4dd;
-  --gold-ink: #7a5304;
-  --soil: #7a5a43;
-  --soil-50: #f4ece4;
-  --sky: #3b82c4;
-  --sky-50: #e6f0fa;
-  --red-50: #fdf0ef;
-  --red-ink: #8f1d1d;
-  --red-line: #f0a8a8;
+  --brand: #047857;          /* emerald: buttons, active states */
+  --brand-900: #022c22;
+  --brand-ink: #046c4e;      /* emerald as text */
+  --leaf: #10b981;
+  --leaf-50: #ecfdf5;
+  --leaf-100: #d1fae5;
+  --gold: #f59e0b;
+  --gold-50: #fff8e6;
+  --gold-ink: #8a5a00;
+  --soil: #8b6a52;
+  --soil-50: #f6f1ec;
+  --sky: #2f7fd0;
+  --sky-50: #ecf4fd;
+  --red-50: #fef2f2;
+  --red-ink: #9b1c1c;
+  --red-line: #f5b5b5;
 
-  --line-soft: rgba(29, 43, 31, 0.05);
-  --line: rgba(29, 43, 31, 0.10);
-  --line-strong: rgba(29, 43, 31, 0.17);
-  --hover: rgba(29, 43, 31, 0.04);
-  --shadow: 0 1px 2px rgba(29, 43, 31, 0.04), 0 4px 16px -8px rgba(29, 43, 31, 0.12);
-  --skel-a: #ece8dc;
-  --skel-b: #f7f4ec;
-  --furrow: rgba(122, 90, 67, 0.035);
+  --line-soft: rgba(17, 22, 19, 0.05);
+  --line: rgba(17, 22, 19, 0.08);
+  --line-strong: rgba(17, 22, 19, 0.14);
+  --hover: rgba(17, 22, 19, 0.04);
+  --shadow: 0 1px 2px rgba(16, 24, 20, 0.04), 0 8px 24px -12px rgba(16, 24, 20, 0.10);
+  --shadow-lg: 0 2px 6px rgba(16, 24, 20, 0.06), 0 24px 48px -16px rgba(16, 24, 20, 0.18);
+  --glass: rgba(255, 255, 255, 0.72);
+  --glass-strong: rgba(255, 255, 255, 0.9);
+  --skel-a: #eeeeeb;
+  --skel-b: #f8f8f6;
+  --glow-1: rgba(16, 185, 129, 0.12);
+  --glow-2: rgba(56, 152, 236, 0.08);
 }
 
-/* Night field: same hues, stepped for a dark surface (chart series validated on --surface-1). */
 :root[data-theme="dark"] {
   color-scheme: dark;
-  --surface-1: #18201a;
-  --surface-2: #1d261f;
-  --page: #0e1410;
-  --text-primary: #ecf0e8;
-  --text-secondary: #c0c7bb;
-  --text-muted: #8e968b;
-  --grid: #2a332c;
-  --axis: #3c463d;
+  --surface-1: #141416;
+  --surface-2: #1a1a1d;
+  --page: #0b0b0c;
+  --text-primary: #f2f3f1;
+  --text-secondary: #b9bcb8;
+  --text-muted: #85898a;
+  --grid: #26262a;
+  --axis: #3a3a40;
   --series-1: #3987e5;
   --series-2: #d95926;
-  --band: #222b24;
+  --band: #1c1c20;
 
-  --brand: #2e7d32;
-  --brand-900: #0c2a15;
-  --brand-ink: #8fd18f;
-  --leaf: #43a047;
-  --leaf-50: #1c2d20;
-  --leaf-100: #24402b;
-  --gold: #e9a823;
-  --gold-50: #33290f;
-  --gold-ink: #f2c25a;
-  --soil: #c9a083;
-  --soil-50: #2c231c;
-  --sky: #6aa8e0;
-  --sky-50: #16273a;
-  --red-50: #3a1a1a;
-  --red-ink: #f2a3a3;
-  --red-line: #7a3434;
+  --brand: #059669;
+  --brand-900: #022c22;
+  --brand-ink: #34d399;
+  --leaf: #34d399;
+  --leaf-50: rgba(52, 211, 153, 0.10);
+  --leaf-100: rgba(52, 211, 153, 0.18);
+  --gold: #fbbf24;
+  --gold-50: rgba(251, 191, 36, 0.10);
+  --gold-ink: #fcd34d;
+  --soil: #d1a98a;
+  --soil-50: rgba(209, 169, 138, 0.10);
+  --sky: #60a5fa;
+  --sky-50: rgba(96, 165, 250, 0.10);
+  --red-50: rgba(239, 68, 68, 0.10);
+  --red-ink: #fca5a5;
+  --red-line: rgba(239, 68, 68, 0.35);
 
-  --line-soft: rgba(255, 255, 255, 0.05);
-  --line: rgba(255, 255, 255, 0.10);
-  --line-strong: rgba(255, 255, 255, 0.18);
+  --line-soft: rgba(255, 255, 255, 0.04);
+  --line: rgba(255, 255, 255, 0.08);
+  --line-strong: rgba(255, 255, 255, 0.14);
   --hover: rgba(255, 255, 255, 0.05);
-  --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 6px 18px -10px rgba(0, 0, 0, 0.6);
-  --skel-a: #1f2821;
-  --skel-b: #2a352c;
-  --furrow: rgba(255, 255, 255, 0.018);
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 24px 48px -16px rgba(0, 0, 0, 0.7);
+  --glass: rgba(20, 20, 22, 0.72);
+  --glass-strong: rgba(24, 24, 27, 0.92);
+  --skel-a: #1a1a1d;
+  --skel-b: #232327;
+  --glow-1: rgba(16, 185, 129, 0.10);
+  --glow-2: rgba(56, 152, 236, 0.06);
 }
 
 html, body, #root { height: 100%; }
 body {
-  background-color: var(--page);
-  /* faint furrows, like a ploughed field seen from above */
-  background-image: repeating-linear-gradient(-28deg, var(--furrow) 0 2px, transparent 2px 22px);
+  background:
+    radial-gradient(900px 420px at 15% -8%, var(--glow-1), transparent 70%),
+    radial-gradient(800px 380px at 95% -12%, var(--glow-2), transparent 70%),
+    var(--page);
   color: var(--text-primary);
-  font-family: system-ui, -apple-system, "Segoe UI", "Noto Sans", "Noto Sans Telugu", "Noto Sans Devanagari", sans-serif;
+  font-family: "Inter Variable", "Noto Sans Telugu Variable", "Noto Sans Devanagari Variable", system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-feature-settings: "cv11", "ss01";
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
   -webkit-tap-highlight-color: transparent;
 }
 h1, h2, h3, .font-display {
-  font-family: "Baloo 2", "Baloo Tammudu 2", system-ui, sans-serif;
-  letter-spacing: -0.005em;
+  font-family: inherit;
+  letter-spacing: -0.02em;
 }
-/* Form controls follow the theme on every page */
+h1 { font-weight: 700; }
+h2, h3 { font-weight: 650; }
+:lang(te) h1, :lang(te) h2, :lang(hi) h1, :lang(hi) h2 { letter-spacing: 0; }
+
 @layer base {
   input:not([type="range"]):not([type="checkbox"]):not([type="radio"]), select, textarea {
     background-color: var(--surface-1);
     color: var(--text-primary);
     border-color: var(--line-strong);
+    border-radius: 0.75rem;
+    transition: border-color 0.15s, box-shadow 0.15s;
   }
-  input:focus-visible, select:focus-visible, textarea:focus-visible, button:focus-visible, a:focus-visible {
+  input:focus, select:focus, textarea:focus {
+    outline: none;
+    border-color: var(--leaf);
+    box-shadow: 0 0 0 3px var(--leaf-100);
+  }
+  button:focus-visible, a:focus-visible {
     outline: 2px solid var(--leaf);
-    outline-offset: 1px;
+    outline-offset: 2px;
   }
-  input[type="range"], input[type="checkbox"], input[type="radio"] { accent-color: var(--leaf); }
+  button { cursor: pointer; transition: background-color 0.15s, color 0.15s, box-shadow 0.15s, transform 0.1s; }
+  button:active:not(:disabled) { transform: scale(0.98); }
+  input[type="range"], input[type="checkbox"], input[type="radio"] { accent-color: var(--brand); }
   ::placeholder { color: var(--text-muted); }
-  table th { color: var(--text-secondary); }
+  table th { color: var(--text-muted); font-weight: 500; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.04em; }
+  ::selection { background: var(--leaf-100); }
 }
-/* Images and drawings sit a little softer at night */
-:root[data-theme="dark"] .k-art { filter: brightness(0.85) saturate(0.9); }
-:root[data-theme="dark"] .leaflet-container { background: #1d261f; }
+
+:root[data-theme="dark"] .k-art { filter: brightness(0.8) saturate(0.85); }
+:root[data-theme="dark"] .leaflet-container { background: #1a1a1d; }
 
 .tabular { font-variant-numeric: tabular-nums; }
 
-/* Header: deep green with a hint of crop rows */
-.k-header {
-  background: linear-gradient(120deg, var(--brand-900), var(--brand) 55%, var(--leaf));
-  background-image:
-    repeating-linear-gradient(100deg, rgba(255, 255, 255, 0.05) 0 1px, transparent 1px 14px),
-    linear-gradient(120deg, var(--brand-900), var(--brand) 55%, var(--leaf));
+/* Map controls in the same rounded style */
+.leaflet-bar, .leaflet-pm-toolbar.leaflet-bar {
+  border: 1px solid var(--line) !important;
+  border-radius: 12px !important;
+  overflow: hidden;
+  box-shadow: var(--shadow) !important;
+}
+.leaflet-bar a, .leaflet-bar a:hover { border-bottom-color: rgba(0, 0, 0, 0.08) !important; }
+.leaflet-control-attribution { border-top-left-radius: 8px; }
+
+/* Top bar: frosted glass over the page */
+.k-topbar {
+  background: var(--glass);
+  backdrop-filter: saturate(180%) blur(16px);
+  -webkit-backdrop-filter: saturate(180%) blur(16px);
+  border-bottom: 1px solid var(--line);
+}
+
+.k-logo {
+  background: linear-gradient(140deg, #34d399, #059669 55%, #065f46);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35), 0 4px 10px -4px rgba(5, 150, 105, 0.6);
+  color: #fff;
 }
 
 .k-card {
   background: var(--surface-1);
   border: 1px solid var(--line);
-  border-radius: 1rem;
+  border-radius: 1.25rem;
   box-shadow: var(--shadow);
 }
+a.k-card, button.k-card { transition: box-shadow 0.2s, transform 0.2s, border-color 0.2s; }
+a.k-card:hover, button.k-card:hover { box-shadow: var(--shadow-lg); transform: translateY(-1px); border-color: var(--line-strong); }
 
+/* Hero: deep emerald with soft light, like early sun over a paddy field */
 .k-hero {
-  border-radius: 1.25rem;
+  position: relative;
+  isolation: isolate;
+  border-radius: 1.5rem;
   color: #fff;
   background:
-    radial-gradient(120% 90% at 100% 0%, rgba(233, 168, 35, 0.35), transparent 55%),
-    linear-gradient(135deg, var(--brand-900), var(--leaf));
-  box-shadow: 0 10px 30px -14px rgba(15, 61, 30, 0.55);
+    radial-gradient(60% 80% at 100% 0%, rgba(251, 191, 36, 0.28), transparent 60%),
+    radial-gradient(70% 90% at 0% 100%, rgba(52, 211, 153, 0.30), transparent 60%),
+    linear-gradient(150deg, #064e3b 0%, #065f46 45%, #047857 100%);
+  box-shadow: 0 20px 40px -20px rgba(4, 120, 87, 0.55);
+}
+.k-hero::after {
+  /* fine grain so the gradient never bands */
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  opacity: 0.08;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+.k-glass {
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
 }
 
-/* Loading placeholder */
+/* Floating tab bar on phones */
+.k-tabbar {
+  background: var(--glass-strong);
+  backdrop-filter: saturate(180%) blur(20px);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow-lg);
+}
+
 .k-skeleton {
   background: linear-gradient(90deg, var(--skel-a) 0%, var(--skel-b) 50%, var(--skel-a) 100%);
   background-size: 200% 100%;
-  animation: k-shimmer 1.2s ease-in-out infinite;
-  border-radius: 0.75rem;
+  animation: k-shimmer 1.4s ease-in-out infinite;
+  border-radius: 1rem;
 }
 @keyframes k-shimmer { from { background-position: 200% 0; } to { background-position: -200% 0; } }
 
-.k-rise { animation: k-rise 0.35s ease-out both; }
-@keyframes k-rise { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+.k-rise { animation: k-rise 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+@keyframes k-rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
 
 .k-pop { animation: k-pop 0.3s ease-out; }
 @keyframes k-pop { 0% { transform: scale(0.6); } 70% { transform: scale(1.15); } 100% { transform: scale(1); } }
 
 @media (prefers-reduced-motion: reduce) {
   .k-skeleton, .k-rise, .k-pop { animation: none; }
+  button:active:not(:disabled) { transform: none; }
 }
 
-/* Room for the phone tab bar */
-.k-safe-bottom { padding-bottom: calc(4.5rem + env(safe-area-inset-bottom)); }
+/* Room for the floating tab bar */
+.k-safe-bottom { padding-bottom: calc(6rem + env(safe-area-inset-bottom)); }
 @media (min-width: 1024px) { .k-safe-bottom { padding-bottom: 0; } }
+
+/* Thin, quiet scrollbars */
+* { scrollbar-width: thin; scrollbar-color: var(--line-strong) transparent; }

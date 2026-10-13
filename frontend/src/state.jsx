@@ -20,7 +20,7 @@ function useTheme() {
   setChartTheme(resolved);   // before children render, so charts pick up the right colours
   useEffect(() => {
     document.documentElement.dataset.theme = resolved;
-    document.querySelector('meta[name="theme-color"]')?.setAttribute("content", resolved === "dark" ? "#0c2a15" : "#1b5e20");
+    document.querySelector('meta[name="theme-color"]')?.setAttribute("content", resolved === "dark" ? "#0b0b0c" : "#f5f6f3");
   }, [resolved]);
   const setTheme = useCallback((v) => { store("kshetra.theme", v); setThemeState(v); }, []);
   return { theme, resolvedTheme: resolved, setTheme };
@@ -97,6 +97,8 @@ export function AppProvider({ children }) {
     else next.delete("field");
     setParams(next, { replace: true });
   }, [params, setParams]);
+
+  useEffect(() => { document.documentElement.lang = lang; }, [lang]);
 
   const setLang = useCallback((l) => {
     store("kshetra.lang", l);

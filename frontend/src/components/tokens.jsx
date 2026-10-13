@@ -2,12 +2,12 @@
 // Same values as the CSS tokens in index.css; series validated against each mode's card surface.
 const STATUS = { warning: "#fab219", serious: "#ec835a", critical: "#d03b3b", good: "#0ca30c" };
 const LIGHT = {
-  surface: "#ffffff", grid: "#e5e2d6", axis: "#c9c5b5", muted: "#7d8378", secondary: "#4f5a4f",
-  series1: "#2a78d6", series2: "#eb6834", band: "#efeee9", ...STATUS,
+  surface: "#ffffff", grid: "#ececea", axis: "#d4d4d0", muted: "#868c86", secondary: "#545a55",
+  series1: "#2a78d6", series2: "#eb6834", band: "#f1f1ee", ...STATUS,
 };
 const DARK = {
-  surface: "#18201a", grid: "#2a332c", axis: "#3c463d", muted: "#8e968b", secondary: "#c0c7bb",
-  series1: "#3987e5", series2: "#d95926", band: "#222b24", ...STATUS,
+  surface: "#141416", grid: "#26262a", axis: "#3a3a40", muted: "#85898a", secondary: "#b9bcb8",
+  series1: "#3987e5", series2: "#d95926", band: "#1c1c20", ...STATUS,
 };
 
 // Read at render time; the theme provider switches it before the tree re-renders.
