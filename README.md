@@ -139,6 +139,8 @@ No key needed: Open-Meteo, NASA POWER, SoilGrids, Ollama (`ollama pull qwen2.5:7
    *Alternative:* Render free (`render.yaml`, 512 MB, set `WITH_AI=0`, sleeps after 15 min idle).
 3. **Web — Vercel (Hobby, non-commercial):** import the repo, root directory `frontend`, set
    `VITE_API_URL=https://<your-space>.hf.space`. `frontend/vercel.json` handles page routes.
+
+   [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Friyanshareefshaik%2FKshetra&root-directory=frontend&project-name=kshetra&env=VITE_API_URL&envDescription=Address%20of%20the%20Kshetra%20API%20(your%20Hugging%20Face%20Space%20or%20Render%20URL))
 4. **CI — GitHub Actions** (`.github/workflows/ci.yml`): lint, 87 backend tests on PostGIS +
    pgvector, frontend build. Free for public repos; private repos get 2,000 free minutes/month.
 
