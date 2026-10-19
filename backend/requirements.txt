@@ -1,0 +1,29 @@
+# Web
+fastapi==0.115.12
+uvicorn[standard]==0.34.2
+pydantic-settings==2.9.1
+httpx==0.28.1
+# Database
+psycopg[binary]==3.2.9
+# Data pipeline (stage 3) and ML (stage 4)
+earthengine-api==1.5.15
+numpy==2.2.6
+pandas==2.2.3
+scipy==1.15.3
+scikit-learn==1.6.1
+shapely==2.1.1
+pyproj==3.7.1
+h5py==3.13.0
+fsspec==2025.5.1
+aiohttp==3.12.13
+joblib==1.5.1
+xgboost==3.0.2
+shap==0.48.0
+# APIs, voice, OCR, PDF (stages 5-9)
+python-multipart==0.0.20
+pyjwt[crypto]==2.10.1
+jinja2==3.1.6
+weasyprint==65.1
+pytesseract==0.3.13
+pillow==11.2.1
+gTTS==2.5.4

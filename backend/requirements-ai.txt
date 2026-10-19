@@ -1,0 +1,5 @@
+# Optional local AI models (all open source). Needs ~2 GB RAM; fine on Hugging Face Spaces free CPU.
+# Without them Kshetra still works: memory search falls back to text, speech uses Bhashini / the browser.
+-r requirements.txt
+sentence-transformers==4.1.0     # Apache 2.0 - multilingual embeddings for semantic memory (Layer 4)
+faster-whisper==1.1.1            # MIT - local speech-to-text fallback for Telugu/Hindi/English
